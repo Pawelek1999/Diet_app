@@ -256,6 +256,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      import_backup: { Args: { p_data: Json }; Returns: Json }
       save_dish: {
         Args: { p_dish: Json; p_id: number; p_ingredients: Json }
         Returns: number

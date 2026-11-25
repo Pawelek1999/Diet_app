@@ -308,12 +308,15 @@ Treść:     {"p_token":"<token>","p_date":"2026-11-25","p_kcal":"523,4"}
 
 ## Eksport / import (`src/lib/backup.ts`)
 
-- Eksport: wszystkie tabele użytkownika → jeden plik JSON
-  `{ version, exportedAt, products, dishes, dishIngredients, entries, settings, activity }`,
-  nazwa `kalorie-backup-YYYY-MM-DD.json`. `navigator.share({ files })` jeśli dostępne, inaczej pobranie pliku.
-- Import: `<input type="file" accept="application/json">`, walidacja struktury (czysta funkcja, testowana),
-  potwierdzenie, zastąpienie danych przez funkcję RPC `import_backup(jsonb)` (jedna transakcja, nowe ID
-  z mapowaniem odwołań).
+- Format: `{ app: "kalorie", version: 1, exportedAt, products, dishes, dish_ingredients, entries, settings }`
+  — wiersze z nazwami kolumn bazy (snake_case), bez `user_id`, łącznie z miękko usuniętymi pozycjami.
+  Nowe tabele (np. `activity` w Etapie 7) dochodzą jako opcjonalne pola tej samej wersji albo nowa wersja.
+- Eksport (`src/db/repositories/backup.ts`): pobieranie stronami po 1000 wierszy (limit `max_rows` Supabase).
+  Dwa kroki w UI: „Przygotuj kopię" (sieć) → „Zapisz plik" — `navigator.share({ files })` musi być wywołane
+  bezpośrednio z tapnięcia (iOS), fallback: pobranie pliku. Data ostatniej kopii w `settings.lastBackupAt`.
+- Import: `<input type="file">` → `parseBackupFile` (walidacja typów i odwołań, testowana) → potwierdzenie
+  z podsumowaniem → RPC `import_backup(jsonb)` (migracja `20261126000001_import_backup.sql`): usuwa dane
+  użytkownika i wstawia kopię w jednej transakcji, z nowymi ID i mapowaniem odwołań. Błąd = brak zmian.
 
 ## PWA (`vite.config.ts`)
 

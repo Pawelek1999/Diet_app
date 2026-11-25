@@ -56,10 +56,10 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [ ] ✅ Test na iPhonie: tworzę danie i loguję 1,5 porcji
 
 ## Etap 5 — Historia i ustawienia
-- [ ] Ustawienia: cele kcal i makro, widoczność posiłków
-- [ ] Historia: wykres tygodnia (słupki + linia celu, SVG), średnia, przełączanie tygodni
-- [ ] `src/lib/backup.ts` (budowa + walidacja, testy), migracja z funkcją `import_backup`
-- [ ] Eksport do JSON (Web Share / pobranie) i import z JSON
+- [x] Ustawienia: cele kcal i makro, kolejność i widoczność posiłków
+- [x] Historia: wykres tygodnia (słupki + linia celu, SVG), średnia, przełączanie tygodni
+- [x] `src/lib/backup.ts` (budowa + walidacja, testy), migracja z funkcją `import_backup`
+- [x] Eksport do JSON (Web Share / pobranie) i import z JSON
 - [ ] ✅ Test: eksportuję kopię do Plików i przywracam ją
 
 ## Etap 6 — Szlif
