@@ -1,0 +1,12 @@
+// Cloudflare Workers config: serves the static Vite build (dist/) — no server code.
+// "name" must match the project name in the Cloudflare dashboard.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "diet-app",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // Unknown paths (e.g. /foods after refresh) return index.html so React Router can handle them.
+    "not_found_handling": "single-page-application"
+  }
+}

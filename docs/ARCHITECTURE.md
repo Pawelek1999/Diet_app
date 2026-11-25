@@ -17,7 +17,7 @@ Skrót iOS „Kalorie Garmin" ──HTTP (RPC import_activity + token)──┘
 - Brak własnego serwera. Źródło prawdy: baza PostgreSQL w Supabase.
 - Ekrany nie znają Supabase — korzystają z hooków, a te z repozytoriów.
 - Hooki odczytu: `useQuery`; zapisy: `useMutation` + `invalidateQueries` (UI odświeża się po zapisie).
-- Aplikacja to statyczne pliki (HTML/JS/CSS) na Cloudflare Pages; service worker cache'uje je (szybki start).
+- Aplikacja to statyczne pliki (HTML/JS/CSS) na Cloudflare (Workers static assets); service worker cache'uje je (szybki start).
 - Bezpieczeństwo: w aplikacji tylko publiczny klucz `anon`; dostęp do danych ograniczają reguły RLS
   (`user_id = auth.uid()`). Rejestracja nowych kont wyłączona w panelu Supabase.
 
@@ -76,8 +76,9 @@ Testy leżą obok kodu: `src/lib/nutrition.test.ts` itd.
 
 ## Routing
 
-`BrowserRouter`. Cloudflare Pages automatycznie serwuje `index.html` dla nieznanych ścieżek
-(tryb SPA, gdy w buildzie nie ma `404.html`), więc odświeżenie dowolnego ekranu działa.
+`BrowserRouter`. Hosting: Cloudflare Workers ze statycznymi plikami (`wrangler.jsonc`,
+`assets.not_found_handling: "single-page-application"`) — nieznane ścieżki zwracają `index.html`,
+więc odświeżenie dowolnego ekranu działa.
 
 | Trasa | Ekran |
 |---|---|

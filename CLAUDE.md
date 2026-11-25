@@ -27,7 +27,8 @@ Szczegóły:
 - **vite-plugin-pwa** — manifest, service worker (cache plików aplikacji)
 - **Vitest** — testy jednostkowe
 - **Zwykły CSS** (zmienne CSS, `prefers-color-scheme` dla trybu ciemnego) — bez bibliotek UI
-- Hosting: **Cloudflare Pages** (prywatne repo GitHub, deploy automatyczny po pushu do `main`)
+- Hosting: **Cloudflare Workers ze statycznymi plikami** (konfiguracja `wrangler.jsonc`, projekt `diet-app`;
+  prywatne repo GitHub, deploy automatyczny po pushu do `main`)
 
 ## Komendy
 

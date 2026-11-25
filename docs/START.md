@@ -17,10 +17,12 @@
    git remote add origin https://github.com/<twoj-login>/kalorie.git
    git push -u origin main
    ```
-3. Cloudflare: **dash.cloudflare.com → Workers & Pages → Create → Pages → Connect to Git**
-   → wybierz repo `kalorie` (zezwól Cloudflare na dostęp do tego repo).
-   - Framework preset: **React (Vite)** (albo ręcznie: build command `npm run build`, output `dist`)
-   - Zapisz i wdróż. Po 1–2 minutach dostaniesz adres `https://kalorie-xxx.pages.dev`.
+3. Cloudflare: **dash.cloudflare.com → Workers & Pages → Create → Import a repository**
+   → wybierz repo (zezwól Cloudflare na dostęp do tego repo).
+   - Project name: `diet-app` (musi się zgadzać z `name` w `wrangler.jsonc`)
+   - Build command: `npm run build`, Deploy command: `npx wrangler deploy` (domyślne)
+   - Advanced settings: Path `/`, API token — utworzy się automatycznie; zmiennych na razie nie dodawaj
+   - Deploy. Po 1–2 minutach dostaniesz adres `https://diet-app.<twoj-subdomena>.workers.dev`.
 4. Na iPhonie otwórz ten adres w **Safari** → **Udostępnij → Do ekranu początkowego**.
    Od teraz otwieraj aplikację z ikony.
 5. Każdy `git push` do `main` = nowa wersja aplikacji po ok. minucie.
@@ -39,8 +41,9 @@
      VITE_SUPABASE_URL=https://xxxx.supabase.co
      VITE_SUPABASE_ANON_KEY=eyJ...
      ```
-   - Cloudflare Pages → Twój projekt → **Settings → Variables and Secrets** → dodaj te same dwie zmienne
-     → potem **Deployments → Retry deployment**.
+   - Cloudflare → Workers & Pages → `diet-app` → **Settings → Build → Variables and secrets**
+     (zmienne **builda**, nie „runtime" — Vite wkleja je do kodu podczas budowania) → dodaj te same
+     dwie zmienne → potem ponów ostatni build (Deployments) albo zrób dowolny push.
    - Klucz `anon` jest publiczny z założenia (chronią Cię reguły RLS). **Nigdy** nie wklejaj nigdzie
      klucza `service_role`.
 5. Wysłanie schematu bazy (gdy Claude przygotuje migrację):
