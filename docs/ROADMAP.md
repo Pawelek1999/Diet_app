@@ -36,12 +36,12 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [ ] ✅ Test: dodaję produkt na komputerze — widzę go na iPhonie
 
 ## Etap 3 — Dziennik („Dziś")
-- [ ] Ekran Dziś: nawigacja po dniach, sekcje posiłków, suma kcal
-- [ ] Ekran dodawania wpisu: wyszukiwarka (fokus od razu), ostatnio używane, ulubione
-- [ ] Wybór ilości (g / porcja) z podglądem kcal na żywo, zapis ze snapshotem
-- [ ] Szybki wpis (same kcal)
-- [ ] Edycja i usuwanie wpisu (przesunięcie lub przycisk), przeniesienie do innego posiłku
-- [ ] Pasek postępu kcal vs cel + paski makro
+- [x] Ekran Dziś: nawigacja po dniach, sekcje posiłków, suma kcal
+- [x] Ekran dodawania wpisu: wyszukiwarka (fokus od razu), ostatnio używane, ulubione
+- [x] Wybór ilości (g / porcja) z podglądem kcal na żywo, zapis ze snapshotem
+- [x] Szybki wpis (same kcal)
+- [x] Edycja i usuwanie wpisu (przycisk na ekranie wpisu), przeniesienie do innego posiłku
+- [x] Pasek postępu kcal vs cel + paski makro
 - [ ] ✅ Test na iPhonie: zapisuję realny dzień jedzenia (także dyktując nazwy produktów)
 
 ## Etap 4 — Dania
@@ -51,8 +51,8 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [x] Wyliczenia na całość / porcję / 100 g na żywo
 - [x] Szczegóły dania: opis, uwagi, przycisk „▶ Przepis" (otwiera link w nowej karcie)
 - [x] Duplikowanie dania
-- [ ] Dania widoczne na ekranie dodawania wpisu
-- [ ] Sprawdź: edycja dania NIE zmienia wcześniejszych wpisów
+- [x] Dania widoczne na ekranie dodawania wpisu
+- [x] Sprawdź: edycja dania NIE zmienia wcześniejszych wpisów
 - [ ] ✅ Test na iPhonie: tworzę danie i loguję 1,5 porcji
 
 ## Etap 5 — Historia i ustawienia

@@ -1,9 +1,10 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { QueryState } from '@/components/QueryState'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { useDeleteProduct, useProduct, useSaveProduct } from '@/hooks/useProducts'
 import { formatKcal, parseDecimal } from '@/lib/format'
+import { safeReturnTo } from '@/lib/navigation'
 import { isKcalConsistent, kcalFromMacros } from '@/lib/nutrition'
 import {
   EMPTY_PRODUCT_FORM,
@@ -49,6 +50,8 @@ export function ProductFormScreen() {
 
 function ProductForm({ id, initial }: { id: number | null; initial: ProductFormValues }) {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const returnTo = safeReturnTo(params.get('returnTo'))
   const save = useSaveProduct()
   const remove = useDeleteProduct()
   const [values, setValues] = useState<ProductFormValues>(initial)
@@ -83,7 +86,7 @@ function ProductForm({ id, initial }: { id: number | null; initial: ProductFormV
     }
     try {
       await save.mutateAsync({ id, input: result.input })
-      navigate('/foods', { replace: true })
+      navigate(returnTo ?? '/foods', { replace: true })
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Nie udało się zapisać.')
     }
@@ -104,7 +107,7 @@ function ProductForm({ id, initial }: { id: number | null; initial: ProductFormV
 
   return (
     <>
-      <ScreenHeader title={id === null ? 'Nowy produkt' : 'Edytuj produkt'} backTo="/foods" />
+      <ScreenHeader title={id === null ? 'Nowy produkt' : 'Edytuj produkt'} backTo={returnTo ?? '/foods'} />
 
       <form className="form" onSubmit={handleSubmit} noValidate>
         <TextField label="Nazwa" value={values.name} error={errors.name} onChange={(v) => set('name', v)} autoFocus={id === null} />

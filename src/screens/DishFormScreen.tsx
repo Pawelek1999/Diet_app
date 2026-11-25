@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { MacroGrid } from '@/components/MacroGrid'
 import { ProductPicker } from '@/components/ProductPicker'
 import { QueryState } from '@/components/QueryState'
@@ -16,6 +16,7 @@ import {
 } from '@/lib/dishForm'
 import { summarizeDish } from '@/lib/dishes'
 import { formatAmount, formatKcal, parseDecimal } from '@/lib/format'
+import { safeReturnTo } from '@/lib/navigation'
 import { isKcalConsistent, kcalFromMacros } from '@/lib/nutrition'
 import type { DishIngredientWithProduct, Macros, Product } from '@/types'
 
@@ -23,7 +24,9 @@ export function DishFormScreen() {
   const { id: idParam } = useParams()
   const id = idParam && /^\d+$/.test(idParam) ? Number(idParam) : null
   const dish = useDish(id)
-  const backTo = id === null ? '/foods?tab=dishes' : `/dish/${id}`
+  const [params] = useSearchParams()
+  const returnTo = safeReturnTo(params.get('returnTo'))
+  const backTo = returnTo ?? (id === null ? '/foods?tab=dishes' : `/dish/${id}`)
 
   if (id !== null && (dish.isLoading || dish.error)) {
     return (
@@ -49,14 +52,15 @@ export function DishFormScreen() {
       key={id ?? 'new'}
       id={id}
       backTo={backTo}
+      returnTo={returnTo}
       initial={dish.data ? dishToFormValues(dish.data) : EMPTY_DISH_FORM}
     />
   )
 }
 
-type DishFormProps = { id: number | null; backTo: string; initial: DishFormValues }
+type DishFormProps = { id: number | null; backTo: string; returnTo: string | null; initial: DishFormValues }
 
-function DishForm({ id, backTo, initial }: DishFormProps) {
+function DishForm({ id, backTo, returnTo, initial }: DishFormProps) {
   const navigate = useNavigate()
   const save = useSaveDish()
   const products = useProducts()
@@ -159,7 +163,7 @@ function DishForm({ id, backTo, initial }: DishFormProps) {
     }
     try {
       const savedId = await save.mutateAsync({ id, input: result.input })
-      navigate(`/dish/${savedId}`, { replace: true })
+      navigate(returnTo ?? `/dish/${savedId}`, { replace: true })
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Nie udało się zapisać.')
     }
