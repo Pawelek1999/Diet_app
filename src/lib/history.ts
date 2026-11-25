@@ -9,6 +9,8 @@ export type DayStat = {
   macros: Macros
   entries: number
   isFuture: boolean
+  /** kcal goal of this day (base goal, plus activity when enabled) */
+  goalKcal: number
 }
 
 export type WeekStats = {
@@ -16,13 +18,19 @@ export type WeekStats = {
   /** average kcal over logged days (with at least one entry) up to today */
   averageKcal: number | null
   loggedDays: number
-  /** days at or under goal among logged days */
+  /** days at or under their own goal among logged days */
   daysOnTarget: number
   /** max value for chart scaling (kcal or goal, whichever is bigger) */
   scaleMax: number
 }
 
-export function weekStats(entries: readonly Entry[], anyDayInWeek: string, goalKcal: number, today: string): WeekStats {
+/** goalFor: kcal goal of a given day (constant, or including that day's activity). */
+export function weekStats(
+  entries: readonly Entry[],
+  anyDayInWeek: string,
+  goalFor: (date: string) => number,
+  today: string,
+): WeekStats {
   const byDate = new Map<string, Entry[]>()
   for (const e of entries) {
     const list = byDate.get(e.date) ?? []
@@ -32,13 +40,19 @@ export function weekStats(entries: readonly Entry[], anyDayInWeek: string, goalK
 
   const days: DayStat[] = weekDays(anyDayInWeek).map((date) => {
     const list = byDate.get(date) ?? []
-    return { date, macros: sumMacros(list.map((e) => e.macros)), entries: list.length, isFuture: date > today }
+    return {
+      date,
+      macros: sumMacros(list.map((e) => e.macros)),
+      entries: list.length,
+      isFuture: date > today,
+      goalKcal: goalFor(date),
+    }
   })
 
   const logged = days.filter((d) => !d.isFuture && d.entries > 0)
   const averageKcal = logged.length > 0 ? logged.reduce((acc, d) => acc + d.macros.kcal, 0) / logged.length : null
-  const daysOnTarget = logged.filter((d) => d.macros.kcal <= goalKcal).length
-  const scaleMax = Math.max(goalKcal, ...days.map((d) => d.macros.kcal), 1)
+  const daysOnTarget = logged.filter((d) => d.macros.kcal <= d.goalKcal).length
+  const scaleMax = Math.max(...days.map((d) => Math.max(d.macros.kcal, d.goalKcal)), 1)
 
   return { days, averageKcal, loggedDays: logged.length, daysOnTarget, scaleMax }
 }

@@ -4,7 +4,7 @@ import { BACKUP_VERSION, type Backup, type BackupSummary } from '@/lib/backup'
 
 const PAGE = 1000 // Supabase returns at most 1000 rows per request (api.max_rows)
 
-type Table = 'products' | 'dishes' | 'dish_ingredients' | 'entries' | 'settings'
+type Table = 'products' | 'dishes' | 'dish_ingredients' | 'entries' | 'settings' | 'activity'
 
 /** Fetches all rows of a table page by page (RLS limits it to the current user). */
 async function fetchAll<T>(table: Table, columns: string, orderBy: string): Promise<T[]> {
@@ -24,7 +24,7 @@ async function fetchAll<T>(table: Table, columns: string, orderBy: string): Prom
 
 /** Collects all of the user's data into a backup object (including soft-deleted items). */
 export async function exportBackup(): Promise<Backup> {
-  const [products, dishes, dishIngredients, entries, settings] = await Promise.all([
+  const [products, dishes, dishIngredients, entries, settings, activity] = await Promise.all([
     fetchAll<Backup['products'][number]>(
       'products',
       'id, name, kcal_100g, protein_100g, fat_100g, carbs_100g, serving_name, serving_grams, is_favorite, created_at, updated_at, deleted_at',
@@ -42,6 +42,7 @@ export async function exportBackup(): Promise<Backup> {
       'id',
     ),
     fetchAll<Backup['settings'][number]>('settings', 'key, value', 'key'),
+    fetchAll<NonNullable<Backup['activity']>[number]>('activity', 'date, active_kcal, source, updated_at', 'date'),
   ])
   return {
     app: 'kalorie',
@@ -52,6 +53,7 @@ export async function exportBackup(): Promise<Backup> {
     dish_ingredients: dishIngredients,
     entries,
     settings,
+    activity,
   }
 }
 

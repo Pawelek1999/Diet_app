@@ -110,3 +110,23 @@ export type MealSetting = {
   label: string
   visible: boolean
 }
+
+export type ActivitySource = 'shortcut' | 'manual'
+
+/** Active kcal burned on a day (from Garmin via the iOS shortcut, or entered manually). */
+export type Activity = {
+  /** YYYY-MM-DD */
+  date: string
+  activeKcal: number
+  source: ActivitySource
+  updatedAt: string
+}
+
+export type ActivitySettings = {
+  /** Add burned kcal to the daily goal */
+  addToGoal: boolean
+  /** How much of the burned kcal is added (0–100 %) */
+  percent: number
+  /** Name of the iOS shortcut started by "Odśwież z Garmina" */
+  shortcutName: string
+}

@@ -4,11 +4,14 @@ import { QueryState } from '@/components/QueryState'
 import { WeekChart } from '@/components/WeekChart'
 import { DEFAULT_GOALS } from '@/constants'
 import { listEntriesInRange } from '@/db/repositories/entries'
+import { useActivityRange, useActivitySettings } from '@/hooks/useActivity'
 import { entryKeys } from '@/hooks/useEntries'
 import { useGoals } from '@/hooks/useSettings'
 import { addDays, formatDayMonth, isDayKey, startOfWeek, todayKey } from '@/lib/dates'
 import { formatKcal, formatMacro } from '@/lib/format'
 import { weekStats } from '@/lib/history'
+import { dailyKcalGoal } from '@/lib/nutrition'
+import { DEFAULT_ACTIVITY_SETTINGS } from '@/constants'
 
 export function HistoryScreen() {
   const [params, setParams] = useSearchParams()
@@ -26,8 +29,17 @@ export function HistoryScreen() {
     queryFn: () => listEntriesInRange(monday, sunday),
   })
 
+  const activity = useActivityRange(monday, sunday)
+  const activitySettings = useActivitySettings().data ?? DEFAULT_ACTIVITY_SETTINGS
+  const activeByDate = new Map((activity.data ?? []).map((a) => [a.date, a.activeKcal]))
+
   // Cheap to compute (max ~7 days of entries) — no memoization needed.
-  const stats = weekStats(entries.data ?? [], monday, goal, today)
+  const stats = weekStats(
+    entries.data ?? [],
+    monday,
+    (date) => dailyKcalGoal(goal, activeByDate.get(date), activitySettings),
+    today,
+  )
 
   const logged = stats.days.filter((d) => !d.isFuture && d.entries > 0)
   const avgMacros =

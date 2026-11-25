@@ -33,7 +33,8 @@ export function WeekChart({ days, goal, scaleMax, today, onSelect }: Props) {
         const cx = PAD_X + slot * i + slot / 2
         const kcal = d.macros.kcal
         const h = Math.max(0, TOP + plotH - y(kcal))
-        const over = kcal > goal
+        const over = kcal > d.goalKcal
+        const hasOwnGoal = Math.round(d.goalKcal) !== Math.round(goal)
         const isToday = d.date === today
         return (
           <g
@@ -56,6 +57,15 @@ export function WeekChart({ days, goal, scaleMax, today, onSelect }: Props) {
                   {formatKcal(kcal)}
                 </text>
               </>
+            )}
+            {hasOwnGoal && (
+              <line
+                x1={cx - barW / 2 - 3}
+                x2={cx + barW / 2 + 3}
+                y1={y(d.goalKcal)}
+                y2={y(d.goalKcal)}
+                className="chart-day-goal"
+              />
             )}
             <text x={cx} y={H - 9} textAnchor="middle" className={isToday ? 'chart-label today' : 'chart-label'}>
               {weekdayShort(d.date)}

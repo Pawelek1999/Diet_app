@@ -1,4 +1,4 @@
-import type { Goals, MealId, MealSetting } from '@/types'
+import type { ActivitySettings, Goals, MealId, MealSetting } from '@/types'
 
 export const MEAL_IDS: readonly MealId[] = [
   'breakfast',
@@ -25,6 +25,12 @@ export const DEFAULT_MEALS: readonly MealSetting[] = MEAL_IDS.map((id) => ({
 }))
 
 export const DEFAULT_GOALS: Goals = { kcal: 2200, protein: 140, fat: 70, carbs: 250 }
+
+export const DEFAULT_ACTIVITY_SETTINGS: ActivitySettings = {
+  addToGoal: false,
+  percent: 100,
+  shortcutName: 'Kalorie Garmin',
+}
 
 export const SETTINGS_KEYS = {
   goals: 'goals',

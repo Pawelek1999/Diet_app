@@ -59,6 +59,8 @@ export type BackupEntry = {
 
 export type BackupSetting = { key: string; value: Json }
 
+export type BackupActivity = { date: string; active_kcal: number; source: string; updated_at?: string }
+
 export type Backup = {
   app: 'kalorie'
   version: typeof BACKUP_VERSION
@@ -68,6 +70,8 @@ export type Backup = {
   dish_ingredients: BackupDishIngredient[]
   entries: BackupEntry[]
   settings: BackupSetting[]
+  /** optional: added in Etap 7 (older backups do not have it) */
+  activity?: BackupActivity[]
 }
 
 export type BackupSummary = {
@@ -161,6 +165,12 @@ export function validateBackup(data: unknown): { ok: true; backup: Backup } | { 
       : 'niepoprawny typ wpisu',
     ),
     checkArray(data, 'settings', (r) => (!isStr(r.key) ? 'brak klucza' : r.value === undefined ? 'brak wartości' : null)),
+    checkArray(data, 'activity', (r) =>
+      !isDay(r.date) ? 'niepoprawna data'
+      : !isNum(r.active_kcal) || r.active_kcal < 0 || r.active_kcal > 20000 ? 'niepoprawne kcal'
+      : r.source !== 'shortcut' && r.source !== 'manual' ? 'niepoprawne źródło'
+      : null,
+    ),
   ].filter((e): e is string => e !== null)
   if (errors.length > 0) return { ok: false, error: `Plik jest uszkodzony: ${errors[0]}` }
 
@@ -173,7 +183,12 @@ export function validateBackup(data: unknown): { ok: true; backup: Backup } | { 
     dish_ingredients: (data.dish_ingredients ?? []) as BackupDishIngredient[],
     entries: (data.entries ?? []) as BackupEntry[],
     settings: (data.settings ?? []) as BackupSetting[],
+    activity: (data.activity ?? []) as BackupActivity[],
   } satisfies Backup
+
+  if (new Set(backup.activity.map((a) => a.date)).size !== backup.activity.length) {
+    return { ok: false, error: 'Plik jest uszkodzony: powtórzone dni aktywności.' }
+  }
 
   // Referential integrity
   const productIds = new Set(backup.products.map((p) => p.id))

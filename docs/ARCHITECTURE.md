@@ -31,7 +31,8 @@ Diet_app/
 │   ├── config.jsonc              # z `npx supabase init` (CLI v3)
 │   └── migrations/
 │       ├── 20261125000001_init.sql       # schemat + RLS + funkcje (Etap 1)
-│       └── 2026xxxxxxxxxx_activity.sql   # aktywność + import z Garmina (Etap 7)
+│       ├── 20261126000001_import_backup.sql  # przywracanie kopii (Etap 5)
+│       └── 20261126000002_activity.sql       # aktywność, tokeny, import z Garmina (Etap 7)
 ├── index.html
 ├── vite.config.ts                # React, vite-plugin-pwa, alias @/, konfiguracja Vitest
 ├── .env.example                  # VITE_SUPABASE_URL=, VITE_SUPABASE_ANON_KEY=
@@ -281,6 +282,7 @@ create table public.import_tokens (     -- RLS włączone, BEZ polityk → niedo
 );
 
 create_import_token() returns text      -- security definer; wymaga zalogowania;
+import_token_created_at() returns timestamptz -- czy/kiedy wygenerowano token (bez ujawniania go)
                                         -- generuje losowy token, zapisuje hash, zwraca token (raz)
 import_activity(p_token text, p_date date, p_kcal text) returns void
                                         -- security definer; szuka użytkownika po hashu tokenu,

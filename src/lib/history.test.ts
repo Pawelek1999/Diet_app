@@ -24,7 +24,7 @@ describe('weekStats', () => {
     entry(3, '2026-11-24', 2500),
     entry(4, '2026-11-25', 1200),
   ]
-  const s = weekStats(entries, '2026-11-25', 2200, '2026-11-25')
+  const s = weekStats(entries, '2026-11-25', () => 2200, '2026-11-25')
 
   it('builds 7 days Mon–Sun with sums', () => {
     expect(s.days.map((d) => d.date)).toEqual([
@@ -47,11 +47,18 @@ describe('weekStats', () => {
 
   it('scales to the max of goal and days', () => {
     expect(s.scaleMax).toBe(2500)
-    expect(weekStats([], '2026-11-25', 2200, '2026-11-25').scaleMax).toBe(2200)
+    expect(weekStats([], '2026-11-25', () => 2200, '2026-11-25').scaleMax).toBe(2200)
+  })
+
+  it('uses a per-day goal (activity)', () => {
+    const s2 = weekStats(entries, '2026-11-25', (d) => (d === '2026-11-24' ? 2700 : 2200), '2026-11-25')
+    expect(s2.days[1]?.goalKcal).toBe(2700)
+    expect(s2.daysOnTarget).toBe(3)
+    expect(s2.scaleMax).toBe(2700)
   })
 
   it('returns null average for an empty week', () => {
-    const empty = weekStats([], '2026-11-25', 2200, '2026-11-25')
+    const empty = weekStats([], '2026-11-25', () => 2200, '2026-11-25')
     expect(empty.averageKcal).toBeNull()
     expect(empty.loggedDays).toBe(0)
   })

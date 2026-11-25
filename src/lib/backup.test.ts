@@ -60,6 +60,25 @@ describe('validateBackup', () => {
   })
 })
 
+describe('activity in backup', () => {
+  it('is optional and defaults to an empty list', () => {
+    const r = validateBackup(valid)
+    expect(r.ok && r.backup.activity).toEqual([])
+  })
+  it('validates rows and duplicate days', () => {
+    const a = { date: '2026-11-25', active_kcal: 500, source: 'shortcut' }
+    expect(validateBackup({ ...valid, activity: [a] }).ok).toBe(true)
+    expect(validateBackup({ ...valid, activity: [{ ...a, active_kcal: -1 }] })).toEqual({
+      ok: false,
+      error: 'Plik jest uszkodzony: activity[0]: niepoprawne kcal',
+    })
+    expect(validateBackup({ ...valid, activity: [a, a] })).toEqual({
+      ok: false,
+      error: 'Plik jest uszkodzony: powtórzone dni aktywności.',
+    })
+  })
+})
+
 describe('summary and file name', () => {
   it('counts active items and date range', () => {
     expect(summarizeBackup(valid)).toEqual({

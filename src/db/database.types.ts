@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity: {
+        Row: {
+          active_kcal: number
+          date: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_kcal: number
+          date: string
+          source: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          active_kcal?: number
+          date?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dish_ingredients: {
         Row: {
           dish_id: number
@@ -185,6 +209,24 @@ export type Database = {
           },
         ]
       }
+      import_tokens: {
+        Row: {
+          created_at: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           carbs_100g: number
@@ -256,7 +298,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_import_token: { Args: never; Returns: string }
+      import_activity: {
+        Args: { p_date: string; p_kcal: string; p_token: string }
+        Returns: Json
+      }
       import_backup: { Args: { p_data: Json }; Returns: Json }
+      import_backup_core: { Args: { p_data: Json }; Returns: Json }
+      import_token_created_at: { Args: never; Returns: string }
       save_dish: {
         Args: { p_dish: Json; p_id: number; p_ingredients: Json }
         Returns: number

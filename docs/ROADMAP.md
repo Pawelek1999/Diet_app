@@ -68,12 +68,12 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [x] Przegląd wydajności i dostępności (rozmiary dotyku ≥ 44 px, etykiety `aria-label`, leniwe ładowanie ekranów, ErrorBoundary, przewijanie na górę)
 
 ## Etap 7 — Spalone kalorie z Garmina
-- [ ] Migracja `activity`: tabela `activity`, `import_tokens`, funkcje `create_import_token`, `import_activity`; `db:types`
-- [ ] Repozytorium `activity.ts`; eksport/import obejmuje `activity`
-- [ ] `dailyKcalGoal` w `nutrition.ts` + testy
-- [ ] Ustawienia: „Wygeneruj token dla skrótu" (pokaż raz + Kopiuj), nazwa skrótu, doliczanie do celu + procent
-- [ ] Ekran Dziś: „Spalone: X kcal", „Odśwież z Garmina" (uruchamia skrót, odświeża po powrocie), ręczna edycja
-- [ ] Cel dnia na ekranie Dziś i w Historii uwzględnia aktywność, gdy ustawienie włączone
+- [x] Migracja `activity`: tabela `activity`, `import_tokens`, funkcje `create_import_token`, `import_activity`; `db:types`
+- [x] Repozytorium `activity.ts`; eksport/import obejmuje `activity`
+- [x] `dailyKcalGoal` w `nutrition.ts` + testy
+- [x] Ustawienia: „Wygeneruj token dla skrótu" (pokaż raz + Kopiuj), nazwa skrótu, doliczanie do celu + procent
+- [x] Ekran Dziś: „Spalone: X kcal", „Odśwież z Garmina" (uruchamia skrót, odświeża po powrocie), ręczna edycja
+- [x] Cel dnia na ekranie Dziś i w Historii uwzględnia aktywność, gdy ustawienie włączone
 - [ ] 👤 Garmin Connect → Apple Zdrowie; budowa skrótu wg START.md; opcjonalnie automatyzacja o 21:00
 - [ ] ✅ Test na iPhonie: po treningu uruchamiam skrót, wartość w aplikacji zgadza się z Garmin Connect
 

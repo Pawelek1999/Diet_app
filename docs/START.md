@@ -76,24 +76,32 @@ to nie wystąpi; jeśli zrobisz dłuższą przerwę — w panelu Supabase klikni
 
 ## Część 5 — skrót „Kalorie Garmin" (Etap 7)
 
-Najpierw w aplikacji Kalorie: **Ustawienia → Wygeneruj token dla skrótu → Kopiuj**.
+Wszystkie potrzebne wartości są w aplikacji: **Ustawienia → Garmin (spalone kalorie) → Dane do skrótu iOS**
+(każda z przyciskiem **Kopiuj**). Najlepiej buduj skrót na iPhonie, kopiując wartości po kolei.
 
-W **Skrótach** → „+" → nazwa **Kalorie Garmin** → akcje (w nawiasie nazwy angielskie):
-
-1. **Znajdź próbki zdrowia** (Find Health Samples)
-   - Typ: **Aktywna energia**; filtry: **Data rozpoczęcia jest dzisiaj**, **Źródło jest Connect** (Garmin)
-2. **Oblicz statystyki** (Calculate Statistics) → **Suma**
-3. **Zaokrąglij liczbę** (Round Number) → do liczb całkowitych
-4. **Data bieżąca** (Current Date) → **Formatuj datę** (Format Date): własny format `yyyy-MM-dd`
-5. **Pobierz zawartość URL** (Get Contents of URL):
-   - URL: `https://<twoj-projekt>.supabase.co/rest/v1/rpc/import_activity`
-   - Metoda: **POST**
-   - Nagłówki: `apikey` = klucz anon; `Content-Type` = `application/json`
-   - Treść: **JSON**, pola tekstowe: `p_token` = token z aplikacji, `p_date` = sformatowana data,
-     `p_kcal` = zaokrąglona liczba
-6. (opcjonalnie) **Pokaż powiadomienie**: „Wysłano [liczba] kcal"
+1. W aplikacji: **Wygeneruj token** → **Kopiuj**. Token widać tylko raz — jeśli go zgubisz, wygeneruj nowy
+   (stary przestanie działać).
+2. W **Skrótach** → „+" → nazwa **Kalorie Garmin** (taka sama jak w Ustawieniach aplikacji) → akcje
+   (w nawiasie nazwy angielskie):
+   1. **Znajdź próbki zdrowia** (Find Health Samples)
+      - Typ: **Aktywna energia**; filtry: **Data rozpoczęcia jest dzisiaj**, **Źródło jest Connect** (Garmin)
+   2. **Oblicz statystyki** (Calculate Statistics) → **Suma**
+   3. **Zaokrąglij liczbę** (Round Number) → do liczb całkowitych
+   4. **Data bieżąca** (Current Date) → **Formatuj datę** (Format Date): własny format `yyyy-MM-dd`
+   5. **Pobierz zawartość URL** (Get Contents of URL):
+      - URL: wklej **Adres (URL)** z aplikacji
+      - Metoda: **POST**
+      - Nagłówki: `apikey` = wklej **Nagłówek apikey** z aplikacji; `Content-Type` = `application/json`
+      - Treść żądania: **JSON**, trzy pola typu **Tekst**:
+        `p_token` = token, `p_date` = sformatowana data (zmienna), `p_kcal` = zaokrąglona liczba (zmienna)
+   6. (opcjonalnie) **Pokaż powiadomienie**: „Wysłano [zaokrąglona liczba] kcal"
 
 Przy pierwszym uruchomieniu iOS zapyta o dostęp do Zdrowia i do internetu — zezwól.
+
+**Test:** uruchom skrót → otwórz Kalorie → na ekranie „Dziś” karta 🔥 pokazuje „Spalone: … kcal · z Garmina”.
+Jeśli skrót pokaże błąd `Invalid token` — wklej token jeszcze raz (albo wygeneruj nowy).
+
+W aplikacji przycisk **⟳ Odśwież z Garmina** uruchamia ten skrót; po powrocie do Kalorii wartość odświeży się sama.
 
 **Automatycznie:** Skróty → Automatyzacja → „+" → **Pora dnia** (np. 21:00, codziennie)
 → **Uruchom natychmiast** → akcja: uruchom skrót „Kalorie Garmin".
@@ -103,4 +111,4 @@ Możesz też powiedzieć „Hej Siri, Kalorie Garmin".
 - Jedna sesja = jeden etap (albo jedno zadanie). Krótsze zadania = mniej błędów.
 - Jeśli chcesz coś zmienić w aplikacji — najpierw popraw PRD.md, potem poproś Claude o wdrożenie zmiany.
 - Commit po każdym etapie, żeby łatwo cofnąć zmiany.
-- Raz w miesiącu: Ustawienia → Eksport — dodatkowa kopia danych w Plikach / iCloud Drive.
+- Raz w miesiącu: Ustawienia → Kopia zapasowa → Przygotuj kopię → Zapisz plik (Pliki / iCloud Drive).

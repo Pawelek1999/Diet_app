@@ -1,16 +1,18 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { ActivityCard } from '@/components/ActivityCard'
 import { DayNav } from '@/components/DayNav'
 import { DayProgress } from '@/components/DayProgress'
 import { QueryState } from '@/components/QueryState'
-import { DEFAULT_GOALS, DEFAULT_MEALS } from '@/constants'
+import { DEFAULT_ACTIVITY_SETTINGS, DEFAULT_GOALS, DEFAULT_MEALS } from '@/constants'
+import { useActivity, useActivitySettings } from '@/hooks/useActivity'
 import { useDayEntries } from '@/hooks/useEntries'
 import { useProducts } from '@/hooks/useProducts'
 import { useGoals, useMeals } from '@/hooks/useSettings'
 import { isDayKey, todayKey } from '@/lib/dates'
 import { amountLabel, groupEntriesByMeal } from '@/lib/entries'
 import { formatKcal } from '@/lib/format'
-import { sumMacros } from '@/lib/nutrition'
+import { dailyKcalGoal, sumMacros } from '@/lib/nutrition'
 
 export function TodayScreen() {
   const [params, setParams] = useSearchParams()
@@ -21,6 +23,8 @@ export function TodayScreen() {
   const goals = useGoals()
   const meals = useMeals()
   const products = useProducts()
+  const activity = useActivity(date)
+  const activitySettings = useActivitySettings().data ?? DEFAULT_ACTIVITY_SETTINGS
   const servingNames = useMemo(
     () => new Map((products.data ?? []).map((p) => [p.id, p.servingName])),
     [products.data],
@@ -32,6 +36,10 @@ export function TodayScreen() {
   )
   const eaten = useMemo(() => sumMacros((entries.data ?? []).map((e) => e.macros)), [entries.data])
 
+  const baseGoals = goals.data ?? DEFAULT_GOALS
+  const dayGoalKcal = dailyKcalGoal(baseGoals.kcal, activity.data?.activeKcal, activitySettings)
+  const dayGoals = { ...baseGoals, kcal: dayGoalKcal }
+
   function changeDate(next: string) {
     setParams(next === todayKey() ? {} : { date: next }, { replace: true })
   }
@@ -39,7 +47,13 @@ export function TodayScreen() {
   return (
     <>
       <DayNav date={date} onChange={changeDate} />
-      <DayProgress eaten={eaten} goals={goals.data ?? DEFAULT_GOALS} />
+      <DayProgress eaten={eaten} goals={dayGoals} />
+      <ActivityCard
+        date={date}
+        activity={activity.data ?? null}
+        settings={activitySettings}
+        addedToGoal={dayGoalKcal - baseGoals.kcal}
+      />
 
       <QueryState isLoading={entries.isLoading} error={entries.error} onRetry={() => entries.refetch()} />
 
