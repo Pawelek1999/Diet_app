@@ -36,23 +36,35 @@ export type DishIngredient = {
   grams: number
 }
 
-export type Dish = {
-  id: number
-  name: string
-  servings: number
-  cookedWeightGrams: number | null
-  isFavorite: boolean
-  ingredients: DishIngredient[]
-  createdAt: string
-  updatedAt: string
-}
+/**
+ * 'ingredients': nutrition computed from ingredients (servings, cookedWeightGrams apply).
+ * 'manual': nutrition entered by hand per serving (like the user's old spreadsheet).
+ */
+export type DishNutrition =
+  | {
+      mode: 'ingredients'
+      servings: number
+      cookedWeightGrams: number | null
+      ingredients: DishIngredient[]
+    }
+  | {
+      mode: 'manual'
+      /** Nutrition of ONE serving */
+      perServing: Macros
+    }
 
 export type DishInput = {
   name: string
-  servings: number
-  cookedWeightGrams: number | null
+  description: string | null
+  notes: string | null
+  recipeUrl: string | null
   isFavorite: boolean
-  ingredients: DishIngredient[]
+} & DishNutrition
+
+export type Dish = DishInput & {
+  id: number
+  createdAt: string
+  updatedAt: string
 }
 
 export type EntrySource =

@@ -60,11 +60,17 @@ na pełnym ekranie. Nie wymaga komputera ani konta Apple Developer do codzienneg
 - Pola: nazwa, kcal/100 g, B/T/W na 100 g, opcjonalna porcja (nazwa + gramy), ulubiony
 - Walidacja: wartości ≥ 0; ostrzeżenie (nie blokada), gdy kcal mocno odbiega od 4·B + 4·W + 9·T
 
-### 4. Dania (przepisy)
+### 4. Dania (przepisy i gotowe posiłki)
 - Lista z wyszukiwarką
-- Tworzenie/edycja: nazwa, liczba porcji, lista składników (produkt + gramy)
-- Automatyczne wyliczenie: kcal i makro całości, na porcję i na 100 g
-- Opcjonalnie: waga gotowego dania (po ugotowaniu), żeby można było logować w gramach
+- Dwa tryby dania:
+  - **„Gotowe makro"** (jak w dotychczasowym Excelu): kcal, B, T, W wpisane ręcznie **na porcję**;
+    do dziennika dodawane w porcjach (np. 1; 0,5; 2)
+  - **„Ze składników"**: nazwa, liczba porcji, lista składników (produkt + gramy); automatyczne
+    wyliczenie kcal i makro całości, na porcję i na 100 g; opcjonalnie waga gotowego dania
+    (po ugotowaniu), żeby można było logować w gramach
+- Pola wspólne: **Opis** (np. składniki jako tekst), **Uwagi**, **Link do przepisu**
+  (np. YouTube — w aplikacji przycisk „▶ Przepis" otwierający link)
+- Dotychczasowe posiłki z Excela użytkownik wpisuje ręcznie jako dania „Gotowe makro"
 - Duplikowanie dania (np. wariant „Owsianka z masłem orzechowym")
 
 ### 5. Historia i statystyki

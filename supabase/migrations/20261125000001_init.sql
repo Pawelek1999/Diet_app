@@ -23,18 +23,31 @@ create table public.products (
 create index products_user_idx on public.products (user_id);
 
 -- ---------------------------------------------------------------------------
--- Dishes (recipes)
+-- Dishes (recipes / ready meals)
+-- mode 'ingredients': nutrition computed from dish_ingredients
+-- mode 'manual':      nutrition entered by hand PER SERVING (kcal/protein/fat/carbs)
 -- ---------------------------------------------------------------------------
 create table public.dishes (
   id                  bigint generated always as identity primary key,
   user_id             uuid not null default auth.uid() references auth.users on delete cascade,
   name                text not null check (length(trim(name)) > 0),
+  mode                text not null default 'ingredients' check (mode in ('ingredients','manual')),
   servings            numeric not null default 1 check (servings > 0),
   cooked_weight_grams numeric check (cooked_weight_grams > 0),
+  kcal                numeric check (kcal >= 0),       -- manual mode: per serving
+  protein             numeric check (protein >= 0),
+  fat                 numeric check (fat >= 0),
+  carbs               numeric check (carbs >= 0),
+  description         text,                            -- free text, e.g. ingredient list
+  notes               text,
+  recipe_url          text check (recipe_url ~* '^https?://'),
   is_favorite         boolean not null default false,
   created_at          timestamptz not null default now(),
   updated_at          timestamptz not null default now(),
-  deleted_at          timestamptz
+  deleted_at          timestamptz,
+  constraint dishes_manual_macros_check check (
+    mode <> 'manual' or (kcal is not null and protein is not null and fat is not null and carbs is not null)
+  )
 );
 create index dishes_user_idx on public.dishes (user_id);
 
@@ -129,14 +142,13 @@ create policy "own rows" on public.settings for all to authenticated
 -- ---------------------------------------------------------------------------
 -- save_dish: insert/update a dish and replace its ingredients atomically.
 -- SECURITY INVOKER — runs with the caller's RLS.
--- p_ingredients: [{"product_id": 1, "grams": 60}, ...] (order = position)
+-- p_dish: {"name", "mode", "servings", "cooked_weight_grams", "kcal", "protein", "fat", "carbs",
+--          "description", "notes", "recipe_url", "is_favorite"}
+-- p_ingredients: [{"product_id": 1, "grams": 60}, ...] (order = position); must be [] in manual mode
 -- ---------------------------------------------------------------------------
 create function public.save_dish(
   p_id bigint,
-  p_name text,
-  p_servings numeric,
-  p_cooked_weight_grams numeric,
-  p_is_favorite boolean,
+  p_dish jsonb,
   p_ingredients jsonb
 ) returns bigint
 language plpgsql
@@ -145,21 +157,51 @@ set search_path = ''
 as $$
 declare
   v_id bigint;
+  v_mode text := coalesce(p_dish ->> 'mode', 'ingredients');
 begin
+  if p_dish is null or jsonb_typeof(p_dish) <> 'object' then
+    raise exception 'p_dish must be a JSON object';
+  end if;
   if p_ingredients is null or jsonb_typeof(p_ingredients) <> 'array' then
     raise exception 'p_ingredients must be a JSON array';
   end if;
+  if v_mode = 'manual' and jsonb_array_length(p_ingredients) > 0 then
+    raise exception 'Manual dishes cannot have ingredients';
+  end if;
 
   if p_id is null then
-    insert into public.dishes (name, servings, cooked_weight_grams, is_favorite)
-    values (p_name, p_servings, p_cooked_weight_grams, coalesce(p_is_favorite, false))
+    insert into public.dishes (
+      name, mode, servings, cooked_weight_grams, kcal, protein, fat, carbs,
+      description, notes, recipe_url, is_favorite
+    ) values (
+      p_dish ->> 'name',
+      v_mode,
+      coalesce((p_dish ->> 'servings')::numeric, 1),
+      (p_dish ->> 'cooked_weight_grams')::numeric,
+      (p_dish ->> 'kcal')::numeric,
+      (p_dish ->> 'protein')::numeric,
+      (p_dish ->> 'fat')::numeric,
+      (p_dish ->> 'carbs')::numeric,
+      nullif(trim(p_dish ->> 'description'), ''),
+      nullif(trim(p_dish ->> 'notes'), ''),
+      nullif(trim(p_dish ->> 'recipe_url'), ''),
+      coalesce((p_dish ->> 'is_favorite')::boolean, false)
+    )
     returning id into v_id;
   else
     update public.dishes
-       set name = p_name,
-           servings = p_servings,
-           cooked_weight_grams = p_cooked_weight_grams,
-           is_favorite = coalesce(p_is_favorite, false)
+       set name = p_dish ->> 'name',
+           mode = v_mode,
+           servings = coalesce((p_dish ->> 'servings')::numeric, 1),
+           cooked_weight_grams = (p_dish ->> 'cooked_weight_grams')::numeric,
+           kcal = (p_dish ->> 'kcal')::numeric,
+           protein = (p_dish ->> 'protein')::numeric,
+           fat = (p_dish ->> 'fat')::numeric,
+           carbs = (p_dish ->> 'carbs')::numeric,
+           description = nullif(trim(p_dish ->> 'description'), ''),
+           notes = nullif(trim(p_dish ->> 'notes'), ''),
+           recipe_url = nullif(trim(p_dish ->> 'recipe_url'), ''),
+           is_favorite = coalesce((p_dish ->> 'is_favorite')::boolean, false)
      where id = p_id and deleted_at is null
     returning id into v_id;
 
@@ -190,5 +232,5 @@ grant select, insert, update, delete on public.dish_ingredients to authenticated
 grant select, insert, update, delete on public.entries          to authenticated;
 grant select, insert, update, delete on public.settings         to authenticated;
 
-revoke execute on function public.save_dish(bigint, text, numeric, numeric, boolean, jsonb) from public, anon;
-grant  execute on function public.save_dish(bigint, text, numeric, numeric, boolean, jsonb) to authenticated;
+revoke execute on function public.save_dish(bigint, jsonb, jsonb) from public, anon;
+grant  execute on function public.save_dish(bigint, jsonb, jsonb) to authenticated;

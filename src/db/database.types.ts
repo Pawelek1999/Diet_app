@@ -51,34 +51,58 @@ export type Database = {
       }
       dishes: {
         Row: {
+          carbs: number | null
           cooked_weight_grams: number | null
           created_at: string
           deleted_at: string | null
+          description: string | null
+          fat: number | null
           id: number
           is_favorite: boolean
+          kcal: number | null
+          mode: string
           name: string
+          notes: string | null
+          protein: number | null
+          recipe_url: string | null
           servings: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          carbs?: number | null
           cooked_weight_grams?: number | null
           created_at?: string
           deleted_at?: string | null
+          description?: string | null
+          fat?: number | null
           id?: never
           is_favorite?: boolean
+          kcal?: number | null
+          mode?: string
           name: string
+          notes?: string | null
+          protein?: number | null
+          recipe_url?: string | null
           servings?: number
           updated_at?: string
           user_id?: string
         }
         Update: {
+          carbs?: number | null
           cooked_weight_grams?: number | null
           created_at?: string
           deleted_at?: string | null
+          description?: string | null
+          fat?: number | null
           id?: never
           is_favorite?: boolean
+          kcal?: number | null
+          mode?: string
           name?: string
+          notes?: string | null
+          protein?: number | null
+          recipe_url?: string | null
           servings?: number
           updated_at?: string
           user_id?: string
@@ -227,12 +251,9 @@ export type Database = {
     Functions: {
       save_dish: {
         Args: {
-          p_cooked_weight_grams: number | null
+          p_dish: Json
           p_id: number | null
           p_ingredients: Json
-          p_is_favorite: boolean
-          p_name: string
-          p_servings: number
         }
         Returns: number
       }

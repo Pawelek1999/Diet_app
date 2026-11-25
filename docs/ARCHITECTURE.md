@@ -118,12 +118,22 @@ create table public.products (
   deleted_at    timestamptz               -- soft delete
 );
 
+-- mode 'ingredients': wartości liczone ze składników (dish_ingredients)
+-- mode 'manual':      wartości wpisane ręcznie NA PORCJĘ (jak w starym Excelu użytkownika)
 create table public.dishes (
   id                  bigint generated always as identity primary key,
   user_id             uuid not null default auth.uid() references auth.users on delete cascade,
   name                text not null,
+  mode                text not null default 'ingredients' check (mode in ('ingredients','manual')),
   servings            numeric not null default 1 check (servings > 0),
   cooked_weight_grams numeric check (cooked_weight_grams > 0),
+  kcal                numeric,               -- tryb manual: na porcję (wymagane wszystkie 4)
+  protein             numeric,
+  fat                 numeric,
+  carbs               numeric,
+  description         text,                  -- np. lista składników jako tekst
+  notes               text,                  -- uwagi
+  recipe_url          text check (recipe_url ~* '^https?://'),  -- link do przepisu (YouTube)
   is_favorite         boolean not null default false,
   created_at          timestamptz not null default now(),
   updated_at          timestamptz not null default now(),
@@ -196,9 +206,10 @@ Danie i jego składniki muszą zapisać się razem (jedna transakcja), więc zap
 PostgreSQL wywoływaną jako RPC (`security invoker` — działa z RLS użytkownika):
 
 ```sql
-save_dish(p_id bigint /* null = nowe */, p_name text, p_servings numeric,
-          p_cooked_weight_grams numeric, p_is_favorite boolean,
-          p_ingredients jsonb /* [{"product_id":1,"grams":60}, ...] */) returns bigint
+save_dish(p_id bigint /* null = nowe */,
+          p_dish jsonb /* {name, mode, servings, cooked_weight_grams, kcal, protein, fat, carbs,
+                           description, notes, recipe_url, is_favorite} */,
+          p_ingredients jsonb /* [{"product_id":1,"grams":60}, ...]; [] w trybie manual */) returns bigint
 -- aktualizuje/wstawia danie, usuwa stare składniki, wstawia nowe z position wg kolejności
 ```
 

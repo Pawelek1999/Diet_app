@@ -51,6 +51,22 @@ export function normalizeForSearch(text: string): string {
     .trim()
 }
 
+/**
+ * Normalize a recipe link: trims, adds https:// when the scheme is missing,
+ * returns null for empty input and for non-http(s) links (e.g. javascript:).
+ */
+export function normalizeRecipeUrl(input: string): string | null {
+  const s = input.trim()
+  if (s === '') return null
+  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(s) ? s : `https://${s}`
+  try {
+    const url = new URL(withScheme)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null
+  } catch {
+    return null
+  }
+}
+
 /** True if every word of the query appears in the text (order-independent). */
 export function matchesSearch(text: string, query: string): boolean {
   const q = normalizeForSearch(query)

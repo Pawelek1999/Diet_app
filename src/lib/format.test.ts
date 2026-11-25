@@ -5,6 +5,7 @@ import {
   formatMacro,
   matchesSearch,
   normalizeForSearch,
+  normalizeRecipeUrl,
   parseDecimal,
 } from './format'
 
@@ -72,6 +73,20 @@ describe('normalizeForSearch', () => {
   })
   it('collapses whitespace and punctuation', () => {
     expect(normalizeForSearch('Pierś  z kurczaka, gotowana!')).toBe('piers z kurczaka gotowana')
+  })
+})
+
+describe('normalizeRecipeUrl', () => {
+  it('keeps valid https links', () => {
+    expect(normalizeRecipeUrl(' https://www.youtube.com/watch?v=abc ')).toBe('https://www.youtube.com/watch?v=abc')
+  })
+  it('adds https:// when missing', () => {
+    expect(normalizeRecipeUrl('youtube.com/shorts/xyz')).toBe('https://youtube.com/shorts/xyz')
+  })
+  it('returns null for empty and unsafe links', () => {
+    expect(normalizeRecipeUrl('   ')).toBeNull()
+    expect(normalizeRecipeUrl('javascript:alert(1)')).toBeNull()
+    expect(normalizeRecipeUrl('ftp://example.com')).toBeNull()
   })
 })
 
