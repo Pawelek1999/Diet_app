@@ -53,10 +53,7 @@ export function DishList() {
             <li key={dish.id} className="list-row">
               <Link to={`/dish/${dish.id}`} className="list-row-link">
                 <span className="list-row-main">
-                  <span className="list-row-title">
-                    {dish.name}
-                    {dish.recipeUrl && <span className="badge" aria-label="ma przepis">▶</span>}
-                  </span>
+                  <span className="list-row-title">{dish.name}</span>
                   <span className="list-row-sub">
                     <MacroLine macros={perServing} />
                   </span>
@@ -66,6 +63,22 @@ export function DishList() {
                   <span className="list-row-hint">kcal/porcja</span>
                 </span>
               </Link>
+              {dish.recipeUrl ? (
+                <a
+                  className="icon-button recipe-link"
+                  href={dish.recipeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Przepis na YouTube: ${dish.name}`}
+                >
+                  <svg viewBox="0 0 28 20" width="28" height="20" aria-hidden="true">
+                    <rect width="28" height="20" rx="5" fill="currentColor" />
+                    <path d="M11 5.5v9l8-4.5z" fill="#fff" />
+                  </svg>
+                </a>
+              ) : (
+                <span className="icon-button-placeholder" aria-hidden="true" />
+              )}
               <FavoriteButton
                 active={dish.isFavorite}
                 label={dish.name}

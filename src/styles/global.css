@@ -612,10 +612,8 @@ a.button {
   accent-color: var(--color-accent);
 }
 
-.badge {
-  margin-left: var(--space-2);
-  font-size: 11px;
-  color: var(--color-danger);
+.recipe-link {
+  color: #e62117;
 }
 
 .list-row-button {
