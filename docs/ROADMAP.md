@@ -13,8 +13,8 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [x] PWA: manifest, ikony (tymczasowe), meta tagi Apple, service worker
 - [x] `.gitignore` (w tym `.env.local`), `.env.example`, `git init`, pierwszy commit
 - [x] `wrangler.jsonc` — hosting statycznych plików na Cloudflare Workers z fallbackiem SPA
-- [ ] 👤 Prywatne repo na GitHubie + push; Cloudflare (Workers) podłączone do repo
-- [ ] ✅ Test na iPhonie: otwieram adres `*.workers.dev` w Safari, dodaję do ekranu głównego, aplikacja startuje na pełnym ekranie, zakładki działają
+- [x] 👤 Prywatne repo na GitHubie + push; Cloudflare (Workers) podłączone do repo
+- [x] ✅ Test na iPhonie: otwieram adres `*.workers.dev` w Safari, dodaję do ekranu głównego, aplikacja startuje na pełnym ekranie, zakładki działają
 
 ## Etap 1 — Supabase, logowanie, logika
 - [ ] 👤 Projekt w Supabase, konto użytkownika, wyłączona rejestracja, klucze w `.env.local` i w zmiennych builda Cloudflare
