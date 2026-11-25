@@ -28,7 +28,7 @@ Diet_app/
 ├── CLAUDE.md
 ├── docs/                         # PRD, ARCHITECTURE, ROADMAP, START
 ├── supabase/
-│   ├── config.toml               # z `npx supabase init`
+│   ├── config.jsonc              # z `npx supabase init` (CLI v3)
 │   └── migrations/
 │       ├── 20261125000001_init.sql       # schemat + RLS + funkcje (Etap 1)
 │       └── 2026xxxxxxxxxx_activity.sql   # aktywność + import z Garmina (Etap 7)

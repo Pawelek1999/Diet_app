@@ -17,16 +17,16 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [x] ✅ Test na iPhonie: otwieram adres `*.workers.dev` w Safari, dodaję do ekranu głównego, aplikacja startuje na pełnym ekranie, zakładki działają
 
 ## Etap 1 — Supabase, logowanie, logika
-- [ ] 👤 Projekt w Supabase, konto użytkownika, wyłączona rejestracja, klucze w `.env.local` i w zmiennych builda Cloudflare
-- [ ] `npx supabase init`; migracja `init` = schemat + RLS + `save_dish` z ARCHITECTURE.md
+- [x] 👤 Projekt w Supabase, konto użytkownika, wyłączona rejestracja, klucze w `.env.local` i w zmiennych builda Cloudflare
+- [x] `npx supabase init`; migracja `init` = schemat + RLS + `save_dish` z ARCHITECTURE.md
 - [ ] 👤 `npx supabase login`, `npx supabase link`, `npx supabase db push`
 - [ ] Skrypt `db:types` + wygenerowanie `src/db/database.types.ts`
-- [ ] `src/db/supabase.ts`, `AuthProvider`, ekran logowania, ochrona tras, wylogowanie
-- [ ] `src/lib/nutrition.ts` + pełne testy jednostkowe
-- [ ] `src/lib/dates.ts`, `src/lib/format.ts` (+ testy, w tym parsowanie „12,5" i `normalizeForSearch` — „Żółty ser." → „zolty ser")
-- [ ] Repozytoria: products, dishes, entries, settings (mapowanie snake_case ↔ camelCase)
-- [ ] Seed: ~15 popularnych produktów (jajko, ryż, pierś z kurczaka, mleko, płatki owsiane, banan, chleb...) — gdy użytkownik nie ma żadnego produktu
-- [ ] Baner „Brak połączenia" (`navigator.onLine` + zdarzenia online/offline)
+- [x] `src/db/supabase.ts`, `AuthProvider`, ekran logowania, ochrona tras, wylogowanie
+- [x] `src/lib/nutrition.ts` + pełne testy jednostkowe
+- [x] `src/lib/dates.ts`, `src/lib/format.ts` (+ testy, w tym parsowanie „12,5" i `normalizeForSearch` — „Żółty ser." → „zolty ser")
+- [x] Repozytoria: products, dishes, entries, settings (mapowanie snake_case ↔ camelCase)
+- [x] Seed: ~15 popularnych produktów (jajko, ryż, pierś z kurczaka, mleko, płatki owsiane, banan, chleb...) — gdy użytkownik nie ma żadnego produktu
+- [x] Baner „Brak połączenia" (`navigator.onLine` + zdarzenia online/offline)
 - [ ] ✅ Test na iPhonie: loguję się, zamykam i otwieram aplikację — nadal zalogowany
 
 ## Etap 2 — Produkty
