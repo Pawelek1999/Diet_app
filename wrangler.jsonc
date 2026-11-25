@@ -4,6 +4,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "diet-app",
   "compatibility_date": "2026-11-01",
+  // Serve on https://diet-app.<subdomain>.workers.dev
+  "workers_dev": true,
+  // No per-branch preview URLs — only main is deployed.
+  "preview_urls": false,
   "assets": {
     "directory": "./dist",
     // Unknown paths (e.g. /foods after refresh) return index.html so React Router can handle them.
