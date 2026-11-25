@@ -30,9 +30,9 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [x] ✅ Test na iPhonie: loguję się, zamykam i otwieram aplikację — nadal zalogowany
 
 ## Etap 2 — Produkty
-- [ ] Lista produktów z wyszukiwarką
-- [ ] Formularz nowy/edycja produktu z walidacją i ostrzeżeniem o niespójnych kcal
-- [ ] Usuwanie (soft delete) z potwierdzeniem, ulubione
+- [x] Lista produktów z wyszukiwarką
+- [x] Formularz nowy/edycja produktu z walidacją i ostrzeżeniem o niespójnych kcal
+- [x] Usuwanie (soft delete) z potwierdzeniem, ulubione
 - [ ] ✅ Test: dodaję produkt na komputerze — widzę go na iPhonie
 
 ## Etap 3 — Dziennik („Dziś")

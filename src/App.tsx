@@ -7,6 +7,7 @@ import { useSeed } from '@/hooks/useSeed'
 import { FoodsScreen } from '@/screens/FoodsScreen'
 import { HistoryScreen } from '@/screens/HistoryScreen'
 import { LoginScreen } from '@/screens/LoginScreen'
+import { ProductFormScreen } from '@/screens/ProductFormScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
 import { TodayScreen } from '@/screens/TodayScreen'
 
@@ -54,6 +55,8 @@ export function App() {
         <Route path="/foods" element={<FoodsScreen />} />
         <Route path="/history" element={<HistoryScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
+        <Route path="/product/new" element={<ProductFormScreen />} />
+        <Route path="/product/:id" element={<ProductFormScreen />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
