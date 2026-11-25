@@ -27,7 +27,7 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [x] Repozytoria: products, dishes, entries, settings (mapowanie snake_case ↔ camelCase)
 - [x] Seed: ~15 popularnych produktów (jajko, ryż, pierś z kurczaka, mleko, płatki owsiane, banan, chleb...) — gdy użytkownik nie ma żadnego produktu
 - [x] Baner „Brak połączenia" (`navigator.onLine` + zdarzenia online/offline)
-- [ ] ✅ Test na iPhonie: loguję się, zamykam i otwieram aplikację — nadal zalogowany
+- [x] ✅ Test na iPhonie: loguję się, zamykam i otwieram aplikację — nadal zalogowany
 
 ## Etap 2 — Produkty
 - [ ] Lista produktów z wyszukiwarką
