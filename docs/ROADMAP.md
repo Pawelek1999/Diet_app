@@ -19,8 +19,8 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 ## Etap 1 — Supabase, logowanie, logika
 - [x] 👤 Projekt w Supabase, konto użytkownika, wyłączona rejestracja, klucze w `.env.local` i w zmiennych builda Cloudflare
 - [x] `npx supabase init`; migracja `init` = schemat + RLS + `save_dish` z ARCHITECTURE.md
-- [ ] 👤 `npx supabase login`, `npx supabase link`, `npx supabase db push`
-- [ ] Skrypt `db:types` + wygenerowanie `src/db/database.types.ts`
+- [x] 👤 `npx supabase login`, `npx supabase link`, `npx supabase db push`
+- [x] Skrypt `db:types` + wygenerowanie `src/db/database.types.ts`
 - [x] `src/db/supabase.ts`, `AuthProvider`, ekran logowania, ochrona tras, wylogowanie
 - [x] `src/lib/nutrition.ts` + pełne testy jednostkowe
 - [x] `src/lib/dates.ts`, `src/lib/format.ts` (+ testy, w tym parsowanie „12,5" i `normalizeForSearch` — „Żółty ser." → „zolty ser")

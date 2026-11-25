@@ -11,7 +11,8 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "lint": "oxlint",
-    "db:types": "npx supabase gen types typescript --linked --schema public > src/db/database.types.ts"
+    "db:types": "supabase gen types typescript --remote --schema public > src/db/database.types.ts",
+    "db:push": "supabase db push --remote"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",

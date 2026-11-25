@@ -40,7 +40,7 @@ npm run typecheck           # sprawdzenie typów
 npm test                    # testy jednostkowe (vitest run)
 npm run build               # build produkcyjny do dist/
 npm run preview             # podgląd buildu (z service workerem)
-npx supabase db push        # wysłanie nowych migracji do bazy (po `npx supabase link`)
+npm run db:push             # wysłanie nowych migracji do bazy (supabase db push --remote)
 npm run db:types            # wygenerowanie typów TS ze schematu bazy
 ```
 

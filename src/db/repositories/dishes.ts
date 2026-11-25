@@ -114,7 +114,8 @@ export async function saveDish(id: number | null, input: DishInput): Promise<num
   const payload = toPayload(input)
   return must(
     await supabase.rpc('save_dish', {
-      p_id: id,
+      // null = create a new dish (the type generator cannot express nullable function args)
+      p_id: id as number,
       p_dish: payload.dish,
       p_ingredients: payload.ingredients,
     }),
