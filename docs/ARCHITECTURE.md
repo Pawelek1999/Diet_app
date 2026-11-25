@@ -179,6 +179,18 @@ create policy "own rows" on public.products
   with check (user_id = (select auth.uid()));
 ```
 
+### Uprawnienia (GRANT)
+Projekt Supabase ma wyłączone „Grant API access to new tables automatically" i włączone
+„Enable RLS on new tables automatically". Dlatego **każda migracja jawnie nadaje uprawnienia**:
+
+```sql
+grant select, insert, update, delete on public.products to authenticated;
+grant execute on function public.save_dish(...) to authenticated;
+-- rola anon dostaje WYŁĄCZNIE execute na import_activity (Etap 7); żadnych tabel
+```
+
+Bez tego aplikacja dostanie błąd „permission denied" mimo poprawnych polityk RLS.
+
 ### Zapis dania z składnikami — funkcja `save_dish`
 Danie i jego składniki muszą zapisać się razem (jedna transakcja), więc zapis idzie przez funkcję
 PostgreSQL wywoływaną jako RPC (`security invoker` — działa z RLS użytkownika):
