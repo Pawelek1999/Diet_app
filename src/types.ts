@@ -40,12 +40,12 @@ export type DishIngredient = {
  * 'ingredients': nutrition computed from ingredients (servings, cookedWeightGrams apply).
  * 'manual': nutrition entered by hand per serving (like the user's old spreadsheet).
  */
-export type DishNutrition =
+export type DishNutrition<I extends DishIngredient = DishIngredient> =
   | {
       mode: 'ingredients'
       servings: number
       cookedWeightGrams: number | null
-      ingredients: DishIngredient[]
+      ingredients: I[]
     }
   | {
       mode: 'manual'
@@ -53,19 +53,28 @@ export type DishNutrition =
       perServing: Macros
     }
 
-export type DishInput = {
+/** Ingredient as read from the DB, with the product's current name and values (even if soft-deleted). */
+export type DishIngredientWithProduct = DishIngredient & {
+  productName: string
+  per100g: Macros
+}
+
+type DishCommon = {
   name: string
   description: string | null
   notes: string | null
   recipeUrl: string | null
   isFavorite: boolean
-} & DishNutrition
-
-export type Dish = DishInput & {
-  id: number
-  createdAt: string
-  updatedAt: string
 }
+
+export type DishInput = DishCommon & DishNutrition
+
+export type Dish = DishCommon &
+  DishNutrition<DishIngredientWithProduct> & {
+    id: number
+    createdAt: string
+    updatedAt: string
+  }
 
 export type EntrySource =
   | { sourceType: 'product'; productId: number }

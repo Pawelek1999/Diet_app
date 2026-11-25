@@ -4,6 +4,8 @@ import { OfflineBanner } from '@/components/OfflineBanner'
 import { TabBar } from '@/components/TabBar'
 import { isSupabaseConfigured } from '@/db/supabase'
 import { useSeed } from '@/hooks/useSeed'
+import { DishFormScreen } from '@/screens/DishFormScreen'
+import { DishScreen } from '@/screens/DishScreen'
 import { FoodsScreen } from '@/screens/FoodsScreen'
 import { HistoryScreen } from '@/screens/HistoryScreen'
 import { LoginScreen } from '@/screens/LoginScreen'
@@ -57,6 +59,9 @@ export function App() {
         <Route path="/settings" element={<SettingsScreen />} />
         <Route path="/product/new" element={<ProductFormScreen />} />
         <Route path="/product/:id" element={<ProductFormScreen />} />
+        <Route path="/dish/new" element={<DishFormScreen />} />
+        <Route path="/dish/:id" element={<DishScreen />} />
+        <Route path="/dish/:id/edit" element={<DishFormScreen />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

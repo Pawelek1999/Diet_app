@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { DishList } from '@/components/DishList'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { MacroLine } from '@/components/MacroLine'
 import { QueryState } from '@/components/QueryState'
@@ -21,11 +22,13 @@ export function FoodsScreen() {
     <>
       <div className="title-row">
         <h1 className="screen-title">{tab === 'products' ? 'Produkty' : 'Dania'}</h1>
-        {tab === 'products' && (
-          <Link to="/product/new" className="button button-primary button-small" aria-label="Dodaj produkt">
-            + Dodaj
-          </Link>
-        )}
+        <Link
+          to={tab === 'products' ? '/product/new' : '/dish/new'}
+          className="button button-primary button-small"
+          aria-label={tab === 'products' ? 'Dodaj produkt' : 'Dodaj danie'}
+        >
+          + Dodaj
+        </Link>
       </div>
 
       <div className="segmented" role="tablist" aria-label="Rodzaj">
@@ -49,11 +52,7 @@ export function FoodsScreen() {
         </button>
       </div>
 
-      {tab === 'products' ? (
-        <ProductList />
-      ) : (
-        <div className="placeholder">Lista dań pojawi się w Etapie 4.</div>
-      )}
+      {tab === 'products' ? <ProductList /> : <DishList />}
     </>
   )
 }

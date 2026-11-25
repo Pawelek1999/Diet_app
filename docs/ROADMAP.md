@@ -45,12 +45,12 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [ ] ✅ Test na iPhonie: zapisuję realny dzień jedzenia (także dyktując nazwy produktów)
 
 ## Etap 4 — Dania
-- [ ] Lista dań (przełącznik Produkty / Dania na zakładce Produkty)
-- [ ] Edytor dania — tryb „Gotowe makro": kcal/B/T/W na porcję, opis, uwagi, link do przepisu (`normalizeRecipeUrl`)
-- [ ] Edytor dania — tryb „Ze składników": składniki (dodaj/usuń/zmień gramy), porcje, waga po ugotowaniu; zapis przez `save_dish`
-- [ ] Wyliczenia na całość / porcję / 100 g na żywo
-- [ ] Szczegóły dania: opis, uwagi, przycisk „▶ Przepis" (otwiera link w nowej karcie)
-- [ ] Duplikowanie dania
+- [x] Lista dań (przełącznik Produkty / Dania na zakładce Produkty)
+- [x] Edytor dania — tryb „Gotowe makro": kcal/B/T/W na porcję, opis, uwagi, link do przepisu (`normalizeRecipeUrl`)
+- [x] Edytor dania — tryb „Ze składników": składniki (dodaj/usuń/zmień gramy), porcje, waga po ugotowaniu; zapis przez `save_dish`
+- [x] Wyliczenia na całość / porcję / 100 g na żywo
+- [x] Szczegóły dania: opis, uwagi, przycisk „▶ Przepis" (otwiera link w nowej karcie)
+- [x] Duplikowanie dania
 - [ ] Dania widoczne na ekranie dodawania wpisu
 - [ ] Sprawdź: edycja dania NIE zmienia wcześniejszych wpisów
 - [ ] ✅ Test na iPhonie: tworzę danie i loguję 1,5 porcji

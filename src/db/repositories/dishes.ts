@@ -1,8 +1,17 @@
 import { check, maybe, must, supabase } from '@/db/supabase'
-import type { Dish, DishInput, DishNutrition } from '@/types'
+import type { Dish, DishIngredientWithProduct, DishInput, DishNutrition } from '@/types'
 
+// Ingredients are embedded with their product's values (also for soft-deleted products).
 const COLUMNS =
-  'id, name, mode, servings, cooked_weight_grams, kcal, protein, fat, carbs, description, notes, recipe_url, is_favorite, created_at, updated_at, dish_ingredients(product_id, grams, position)'
+  'id, name, mode, servings, cooked_weight_grams, kcal, protein, fat, carbs, description, notes, recipe_url, is_favorite, created_at, updated_at, dish_ingredients(product_id, grams, position, products(name, kcal_100g, protein_100g, fat_100g, carbs_100g))'
+
+type EmbeddedProduct = {
+  name: string
+  kcal_100g: number
+  protein_100g: number
+  fat_100g: number
+  carbs_100g: number
+} | null
 
 type DishRowWithIngredients = {
   id: number
@@ -20,10 +29,10 @@ type DishRowWithIngredients = {
   is_favorite: boolean
   created_at: string
   updated_at: string
-  dish_ingredients: { product_id: number; grams: number; position: number }[]
+  dish_ingredients: { product_id: number; grams: number; position: number; products: EmbeddedProduct }[]
 }
 
-function mapNutrition(row: DishRowWithIngredients): DishNutrition {
+function mapNutrition(row: DishRowWithIngredients): DishNutrition<DishIngredientWithProduct> {
   if (row.mode === 'manual') {
     return {
       mode: 'manual',
@@ -41,7 +50,17 @@ function mapNutrition(row: DishRowWithIngredients): DishNutrition {
     cookedWeightGrams: row.cooked_weight_grams === null ? null : Number(row.cooked_weight_grams),
     ingredients: [...row.dish_ingredients]
       .sort((a, b) => a.position - b.position)
-      .map((i) => ({ productId: i.product_id, grams: Number(i.grams) })),
+      .map((i) => ({
+        productId: i.product_id,
+        grams: Number(i.grams),
+        productName: i.products?.name ?? 'Nieznany produkt',
+        per100g: {
+          kcal: Number(i.products?.kcal_100g ?? 0),
+          protein: Number(i.products?.protein_100g ?? 0),
+          fat: Number(i.products?.fat_100g ?? 0),
+          carbs: Number(i.products?.carbs_100g ?? 0),
+        },
+      })),
   }
 }
 
