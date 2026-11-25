@@ -102,15 +102,6 @@ a {
   font-weight: 700;
 }
 
-.placeholder {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: var(--space-5) var(--space-4);
-  color: var(--color-text-muted);
-  text-align: center;
-}
-
 .muted {
   color: var(--color-text-muted);
 }
@@ -260,7 +251,7 @@ a {
 }
 
 .button-small {
-  min-height: 36px;
+  min-height: var(--touch-min);
   padding: 0 var(--space-3);
   display: inline-flex;
   align-items: center;
@@ -344,7 +335,7 @@ a.button {
 
 .segmented-item {
   flex: 1;
-  min-height: 36px;
+  min-height: 38px;
   border: none;
   border-radius: 8px;
   background: transparent;
@@ -866,8 +857,8 @@ a.button {
   right: 48px;
   top: 50%;
   transform: translateY(-50%);
-  min-height: 30px;
-  padding: 0 var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-3);
   font-size: 13px;
 }
 
@@ -1066,7 +1057,8 @@ a.chip {
 }
 
 .quick-amounts .chip {
-  min-height: 36px;
+  min-height: var(--touch-min);
+  min-width: 56px;
 }
 
 /* Settings */

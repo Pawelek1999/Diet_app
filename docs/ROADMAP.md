@@ -63,9 +63,9 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [ ] ✅ Test: eksportuję kopię do Plików i przywracam ją
 
 ## Etap 6 — Szlif
-- [ ] Puste stany („Brak wpisów — dodaj pierwszy posiłek"), stany ładowania i błędów
-- [ ] Dopracowanie trybu ciemnego, docelowa ikona aplikacji
-- [ ] Przegląd wydajności i dostępności (rozmiary dotyku ≥ 44 px, etykiety `aria-label`)
+- [x] Puste stany („Brak wpisów — dodaj pierwszy posiłek"), stany ładowania i błędów
+- [x] Dopracowanie trybu ciemnego, docelowa ikona aplikacji
+- [x] Przegląd wydajności i dostępności (rozmiary dotyku ≥ 44 px, etykiety `aria-label`, leniwe ładowanie ekranów, ErrorBoundary, przewijanie na górę)
 
 ## Etap 7 — Spalone kalorie z Garmina
 - [ ] Migracja `activity`: tabela `activity`, `import_tokens`, funkcje `create_import_token`, `import_activity`; `db:types`

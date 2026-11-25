@@ -1,19 +1,25 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Outlet, Route, Routes } from 'react-router'
 import { useAuth } from '@/auth/authContext'
 import { OfflineBanner } from '@/components/OfflineBanner'
+import { QueryState } from '@/components/QueryState'
+import { ScrollToTop } from '@/components/ScrollToTop'
 import { TabBar } from '@/components/TabBar'
 import { isSupabaseConfigured } from '@/db/supabase'
 import { useSeed } from '@/hooks/useSeed'
-import { AddEntryScreen } from '@/screens/AddEntryScreen'
-import { DishFormScreen } from '@/screens/DishFormScreen'
-import { DishScreen } from '@/screens/DishScreen'
-import { EditEntryScreen } from '@/screens/EditEntryScreen'
-import { FoodsScreen } from '@/screens/FoodsScreen'
-import { HistoryScreen } from '@/screens/HistoryScreen'
 import { LoginScreen } from '@/screens/LoginScreen'
-import { ProductFormScreen } from '@/screens/ProductFormScreen'
-import { SettingsScreen } from '@/screens/SettingsScreen'
 import { TodayScreen } from '@/screens/TodayScreen'
+
+// The start screen is in the main bundle; other screens load on demand (and are precached by the
+// service worker, so they still open instantly and offline after the first visit).
+const AddEntryScreen = lazy(() => import('@/screens/AddEntryScreen').then((m) => ({ default: m.AddEntryScreen })))
+const DishFormScreen = lazy(() => import('@/screens/DishFormScreen').then((m) => ({ default: m.DishFormScreen })))
+const DishScreen = lazy(() => import('@/screens/DishScreen').then((m) => ({ default: m.DishScreen })))
+const EditEntryScreen = lazy(() => import('@/screens/EditEntryScreen').then((m) => ({ default: m.EditEntryScreen })))
+const FoodsScreen = lazy(() => import('@/screens/FoodsScreen').then((m) => ({ default: m.FoodsScreen })))
+const HistoryScreen = lazy(() => import('@/screens/HistoryScreen').then((m) => ({ default: m.HistoryScreen })))
+const ProductFormScreen = lazy(() => import('@/screens/ProductFormScreen').then((m) => ({ default: m.ProductFormScreen })))
+const SettingsScreen = lazy(() => import('@/screens/SettingsScreen').then((m) => ({ default: m.SettingsScreen })))
 
 /** Layout for signed-in screens: content + bottom tabs. Redirects to /login without a session. */
 function ProtectedLayout() {
@@ -26,8 +32,11 @@ function ProtectedLayout() {
   return (
     <div className="app">
       <OfflineBanner />
+      <ScrollToTop />
       <main className="app-content">
-        <Outlet />
+        <Suspense fallback={<QueryState isLoading error={null} />}>
+          <Outlet />
+        </Suspense>
       </main>
       <TabBar />
     </div>
