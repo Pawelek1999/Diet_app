@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState, type FormEvent } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { AmountPanel } from '@/components/AmountPanel'
 import { QueryState } from '@/components/QueryState'
+import { QuickEntryForm } from '@/components/QuickEntryForm'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { SearchInput } from '@/components/SearchInput'
 import { MealSelect } from '@/components/MealSelect'
@@ -9,6 +10,7 @@ import { useDishes } from '@/hooks/useDishes'
 import { useCreateEntry, useRecentEntries } from '@/hooks/useEntries'
 import { useProducts } from '@/hooks/useProducts'
 import { isDayKey, todayKey } from '@/lib/dates'
+import { EMPTY_QUICK_ENTRY } from '@/lib/quickEntry'
 import { summarizeDish } from '@/lib/dishes'
 import {
   amountLabel,
@@ -18,7 +20,7 @@ import {
   recentItems,
   type FoodItem,
 } from '@/lib/entries'
-import { formatKcal, matchesSearch, parseDecimal } from '@/lib/format'
+import { formatKcal, matchesSearch } from '@/lib/format'
 import type { Macros, MealId, Unit } from '@/types'
 
 type Selection = { item: FoodItem; amount: number; unit: Unit }
@@ -147,29 +149,27 @@ export function AddEntryScreen() {
           />
         </section>
       ) : quick ? (
-        <QuickEntryForm
-          busy={create.isPending}
-          error={saveError}
-          onCancel={() => setQuick(false)}
-          onSubmit={(name, kcal) =>
-            save({
-              date,
-              meal,
-              name,
-              amount: 1,
-              unit: 'serving',
-              macros: { kcal, protein: 0, fat: 0, carbs: 0 },
-              sourceType: 'quick',
-            })
-          }
-        />
+        <section className="card section">
+          <h2 className="section-title">Szybki wpis</h2>
+          <QuickEntryForm
+            initial={EMPTY_QUICK_ENTRY}
+            submitLabel="Dodaj"
+            autoFocus
+            busy={create.isPending}
+            error={saveError}
+            onCancel={() => setQuick(false)}
+            onSubmit={(name, macros) =>
+              save({ date, meal, name, amount: 1, unit: 'serving', macros, sourceType: 'quick' })
+            }
+          />
+        </section>
       ) : (
         <>
           <SearchInput value={query} onChange={setQuery} placeholder="Szukaj produktu lub dania" inputRef={searchRef} autoFocus />
 
           <div className="add-actions">
             <button type="button" className="chip" onClick={() => setQuick(true)}>
-              ⚡ Szybki wpis kcal
+              ⚡ Szybki wpis
             </button>
             <Link to={`/product/new?returnTo=${encodeURIComponent(addUrl)}`} className="chip">
               + Produkt
@@ -236,71 +236,5 @@ function ItemSection({ title, items, onPick, empty }: ItemSectionProps) {
         </ul>
       )}
     </section>
-  )
-}
-
-type QuickProps = {
-  busy: boolean
-  error: string | null
-  onCancel: () => void
-  onSubmit: (name: string, kcal: number) => void
-}
-
-function QuickEntryForm({ busy, error, onCancel, onSubmit }: QuickProps) {
-  const [name, setName] = useState('')
-  const [kcal, setKcal] = useState('')
-  const [fieldError, setFieldError] = useState<string | null>(null)
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    const n = parseDecimal(kcal)
-    if (n === null || n <= 0) {
-      setFieldError('Podaj liczbę kalorii większą od 0.')
-      return
-    }
-    if (n > 10000) {
-      setFieldError('Maksymalnie 10000 kcal.')
-      return
-    }
-    onSubmit(name.trim() || 'Szybki wpis', n)
-  }
-
-  return (
-    <form className="card section form" onSubmit={handleSubmit} noValidate>
-      <h2 className="section-title">Szybki wpis</h2>
-      <label className="field">
-        <span className="field-label">Kalorie (kcal)</span>
-        <input
-          type="text"
-          inputMode="decimal"
-          autoComplete="off"
-          autoFocus
-          value={kcal}
-          aria-invalid={Boolean(fieldError)}
-          onChange={(e) => {
-            setKcal(e.target.value)
-            setFieldError(null)
-          }}
-        />
-        {fieldError && <span className="field-error">{fieldError}</span>}
-      </label>
-      <label className="field">
-        <span className="field-label">Nazwa (opcjonalnie)</span>
-        <input type="text" placeholder="Szybki wpis" value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
-      {error && (
-        <p className="form-error" role="alert">
-          {error}
-        </p>
-      )}
-      <div className="actions">
-        <button type="button" className="button button-secondary" onClick={onCancel}>
-          Anuluj
-        </button>
-        <button type="submit" className="button button-primary" disabled={busy}>
-          {busy ? 'Zapisywanie…' : 'Dodaj'}
-        </button>
-      </div>
-    </form>
   )
 }

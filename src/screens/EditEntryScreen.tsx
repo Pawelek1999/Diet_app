@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router'
 import { AmountPanel } from '@/components/AmountPanel'
 import { MacroGrid } from '@/components/MacroGrid'
 import { QueryState } from '@/components/QueryState'
+import { QuickEntryForm } from '@/components/QuickEntryForm'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { MealSelect } from '@/components/MealSelect'
 import { useDishes } from '@/hooks/useDishes'
@@ -11,6 +12,7 @@ import { useProducts } from '@/hooks/useProducts'
 import { todayKey } from '@/lib/dates'
 import { amountLabel, parseAmount, recomputeEntryMacros, type FoodItem } from '@/lib/entries'
 import { formatAmount, formatKcal, parseDecimal } from '@/lib/format'
+import { quickEntryToFormValues } from '@/lib/quickEntry'
 import type { Entry, EntryInput, Macros, MealId, Unit } from '@/types'
 
 export function EditEntryScreen() {
@@ -111,7 +113,13 @@ function EntryEditor({ entry, source }: { entry: Entry; source: FoodItem | null 
 
       <section className="card section">
         {entry.sourceType === 'quick' ? (
-          <QuickEditor entry={entry} busy={busy} error={error} onSave={(name, kcal) => persist({ name, macros: { kcal, protein: 0, fat: 0, carbs: 0 } })} />
+          <QuickEntryForm
+            initial={quickEntryToFormValues(entry.name, entry.macros)}
+            submitLabel="Zapisz"
+            busy={busy}
+            error={error}
+            onSubmit={(name, macros) => persist({ name, macros })}
+          />
         ) : source ? (
           <AmountPanel
             item={source}
@@ -190,63 +198,6 @@ function OrphanEditor({
         {fieldError && <span className="field-error">{fieldError}</span>}
       </label>
       {preview && <MacroGrid macros={preview} />}
-      {error && (
-        <p className="form-error" role="alert">
-          {error}
-        </p>
-      )}
-      <button type="submit" className="button button-primary" disabled={busy}>
-        {busy ? 'Zapisywanie…' : 'Zapisz'}
-      </button>
-    </form>
-  )
-}
-
-function QuickEditor({
-  entry,
-  busy,
-  error,
-  onSave,
-}: {
-  entry: Entry
-  busy: boolean
-  error: string | null
-  onSave: (name: string, kcal: number) => void
-}) {
-  const [name, setName] = useState(entry.name)
-  const [kcal, setKcal] = useState(formatAmount(entry.macros.kcal))
-  const [fieldError, setFieldError] = useState<string | null>(null)
-
-  function submit(e: FormEvent) {
-    e.preventDefault()
-    const n = parseDecimal(kcal)
-    if (n === null || n <= 0 || n > 10000) {
-      setFieldError('Podaj liczbę kalorii od 1 do 10000.')
-      return
-    }
-    onSave(name.trim() || 'Szybki wpis', n)
-  }
-
-  return (
-    <form className="form" onSubmit={submit} noValidate>
-      <label className="field">
-        <span className="field-label">Kalorie (kcal)</span>
-        <input
-          type="text"
-          inputMode="decimal"
-          value={kcal}
-          aria-invalid={Boolean(fieldError)}
-          onChange={(e) => {
-            setKcal(e.target.value)
-            setFieldError(null)
-          }}
-        />
-        {fieldError && <span className="field-error">{fieldError}</span>}
-      </label>
-      <label className="field">
-        <span className="field-label">Nazwa</span>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
       {error && (
         <p className="form-error" role="alert">
           {error}

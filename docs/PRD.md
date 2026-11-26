@@ -52,7 +52,7 @@ na pełnym ekranie. Nie wymaga komputera ani konta Apple Developer do codzienneg
 - Sekcja „Ostatnio używane" i „Ulubione"
 - Po wybraniu: podaj ilość (gramy albo porcje), podgląd kcal i makro na żywo
 - Przycisk „Utwórz nowy produkt / danie", jeśli nie ma na liście
-- Szybkie dodanie samych kcal bez produktu („Szybki wpis: 250 kcal")
+- Szybkie dodanie kcal bez produktu („Szybki wpis: 250 kcal"), opcjonalnie z makro (B/T/W); puste kcal liczone z makro
 
 ### 3. Produkty
 - Lista z wyszukiwarką

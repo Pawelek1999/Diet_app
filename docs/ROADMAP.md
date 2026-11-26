@@ -39,7 +39,7 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [x] Ekran Dziś: nawigacja po dniach, sekcje posiłków, suma kcal
 - [x] Ekran dodawania wpisu: wyszukiwarka (fokus od razu), ostatnio używane, ulubione
 - [x] Wybór ilości (g / porcja) z podglądem kcal na żywo, zapis ze snapshotem
-- [x] Szybki wpis (same kcal)
+- [x] Szybki wpis (kcal + opcjonalnie makro)
 - [x] Edycja i usuwanie wpisu (przycisk na ekranie wpisu), przeniesienie do innego posiłku
 - [x] Pasek postępu kcal vs cel + paski makro
 - [ ] ✅ Test na iPhonie: zapisuję realny dzień jedzenia (także dyktując nazwy produktów)
