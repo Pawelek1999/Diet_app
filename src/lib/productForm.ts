@@ -1,3 +1,4 @@
+import { normalizeBarcode } from '@/lib/barcode'
 import { parseDecimal } from '@/lib/format'
 import type { Product, ProductInput } from '@/types'
 
@@ -11,6 +12,7 @@ export type ProductFormValues = {
   carbs: string
   servingName: string
   servingGrams: string
+  barcode: string
   isFavorite: boolean
 }
 
@@ -28,6 +30,7 @@ export const EMPTY_PRODUCT_FORM: ProductFormValues = {
   carbs: '',
   servingName: '',
   servingGrams: '',
+  barcode: '',
   isFavorite: false,
 }
 
@@ -45,6 +48,7 @@ export function productToFormValues(p: Product): ProductFormValues {
     carbs: toInput(p.per100g.carbs),
     servingName: p.servingName ?? '',
     servingGrams: p.servingGrams === null ? '' : toInput(p.servingGrams),
+    barcode: p.barcode ?? '',
     isFavorite: p.isFavorite,
   }
 }
@@ -96,6 +100,12 @@ export function validateProductForm(v: ProductFormValues): ProductFormResult {
     errors.servingGrams = 'Podaj wagę porcji w gramach.'
   }
 
+  let barcode: string | null = null
+  if (v.barcode.trim() !== '') {
+    barcode = normalizeBarcode(v.barcode)
+    if (barcode === null) errors.barcode = 'Kod kreskowy to 8–14 cyfr.'
+  }
+
   if (Object.keys(errors).length > 0) return { ok: false, errors }
 
   return {
@@ -111,6 +121,7 @@ export function validateProductForm(v: ProductFormValues): ProductFormResult {
       // A serving without a name gets a generic one, so it can be shown in the UI.
       servingName: servingGrams === null ? null : servingName || '1 porcja',
       servingGrams,
+      barcode,
       isFavorite: v.isFavorite,
     },
   }

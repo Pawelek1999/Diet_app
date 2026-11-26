@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { safeReturnTo } from './navigation'
+import { safeReturnTo, withParam } from './navigation'
 
 describe('safeReturnTo', () => {
   it('accepts in-app paths', () => {
@@ -11,5 +11,13 @@ describe('safeReturnTo', () => {
     expect(safeReturnTo('/\\evil.com')).toBeNull()
     expect(safeReturnTo('foods')).toBeNull()
     expect(safeReturnTo(null)).toBeNull()
+  })
+})
+
+describe('withParam', () => {
+  it('adds or replaces a query param', () => {
+    expect(withParam('/entry/add?date=2026-11-25&meal=lunch', 'productId', '7')).toBe('/entry/add?date=2026-11-25&meal=lunch&productId=7')
+    expect(withParam('/entry/add?productId=1', 'productId', '7')).toBe('/entry/add?productId=7')
+    expect(withParam('/foods', 'x', 'a b')).toBe('/foods?x=a+b')
   })
 })

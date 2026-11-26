@@ -21,6 +21,7 @@ const egg: Product = {
   per100g: { kcal: 143, protein: 12.6, fat: 9.5, carbs: 0.7 },
   servingName: '1 jajko',
   servingGrams: 60,
+  barcode: null,
   isFavorite: false,
   createdAt: '',
   updatedAt: '',

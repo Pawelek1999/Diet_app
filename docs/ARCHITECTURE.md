@@ -64,7 +64,11 @@ Diet_app/
 │   │   ├── nutrition.ts          # obliczenia kcal/makro, cel dnia z aktywnością (testowane)
 │   │   ├── dates.ts              # YYYY-MM-DD, przesuwanie dni, tydzień (testowane)
 │   │   ├── format.ts             # liczby po polsku, parsowanie „12,5", normalizeForSearch (testowane)
-│   │   └── backup.ts             # budowa i walidacja pliku kopii JSON (testowane)
+│   │   ├── backup.ts             # budowa i walidacja pliku kopii JSON (testowane)
+│   │   └── barcode.ts            # normalizacja kodów EAN/UPC, mapowanie danych Open Food Facts (testowane)
+│   ├── services/                 # zewnętrzne API poza Supabase (ładowane na żądanie)
+│   │   ├── openFoodFacts.ts      # wyszukiwanie produktu po kodzie (publiczne API, bez klucza)
+│   │   └── barcodeDetector.ts    # czytnik kodów: natywny BarcodeDetector albo ZXing (WASM z własnej domeny)
 │   ├── hooks/                    # useDayEntries, useProducts, useDish, useActivity, useOnline...
 │   ├── components/               # TabBar, MacroBar, CalorieBar, EntryRow, NumberInput, WeekChart...
 │   ├── styles/global.css         # zmienne CSS (kolory, odstępy), tryb ciemny, safe-area
@@ -114,6 +118,7 @@ create table public.products (
   carbs_100g    numeric not null default 0 check (carbs_100g >= 0),
   serving_name  text,                     -- np. "1 jajko"
   serving_grams numeric check (serving_grams > 0),
+  barcode       text check (barcode ~ '^[0-9]{8,14}$'),  -- EAN/UPC (migracja ..._product_barcode.sql)
   is_favorite   boolean not null default false,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
@@ -321,6 +326,19 @@ Treść:     {"p_token":"<token>","p_date":"2026-11-25","p_kcal":"523,4"}
 - Import: `<input type="file">` → `parseBackupFile` (walidacja typów i odwołań, testowana) → potwierdzenie
   z podsumowaniem → RPC `import_backup(jsonb)` (migracja `20261126000001_import_backup.sql`): usuwa dane
   użytkownika i wstawia kopię w jednej transakcji, z nowymi ID i mapowaniem odwołań. Błąd = brak zmian.
+
+## Skaner kodów kreskowych
+
+- Biblioteka `barcode-detector` (polyfill Barcode Detection API na silniku ZXing w WebAssembly) — Safari na iOS
+  nie ma natywnego `BarcodeDetector`. Moduł i plik `.wasm` (~1 MB) ładowane dopiero po otwarciu skanera;
+  WASM serwowany z własnej domeny (nie z CDN), cache'owany przez service worker przy pierwszym skanie.
+- `BarcodeScanner` (komponent pełnoekranowy): `getUserMedia` (tylna kamera) → `detect()` co ~150 ms →
+  `normalizeBarcode` (UPC-A 12 cyfr → EAN-13 z wiodącym 0). Zawsze dostępne ręczne wpisanie kodu.
+- Przepływ w „Dodaj wpis": kod znaleziony we własnych produktach → od razu wybór ilości; inaczej
+  `/product/new?barcode=…&returnTo=…` → formularz wypełniony z Open Food Facts (`world.openfoodfacts.org/api/v2`)
+  do sprawdzenia → po zapisie powrót z `productId`, nowy produkt od razu wybrany.
+- Unikalność: indeks `(user_id, barcode)` dla aktywnych produktów; konflikt → `DuplicateBarcodeError`.
+  Kod jest w kopii zapasowej (opcjonalne pole `barcode`; `import_backup_core` je przywraca).
 
 ## PWA (`vite.config.ts`)
 

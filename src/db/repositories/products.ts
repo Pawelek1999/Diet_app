@@ -5,7 +5,7 @@ import type { Product, ProductInput } from '@/types'
 type ProductRow = Database['public']['Tables']['products']['Row']
 
 const COLUMNS =
-  'id, name, kcal_100g, protein_100g, fat_100g, carbs_100g, serving_name, serving_grams, is_favorite, created_at, updated_at'
+  'id, name, kcal_100g, protein_100g, fat_100g, carbs_100g, serving_name, serving_grams, barcode, is_favorite, created_at, updated_at'
 
 export function mapProduct(row: Omit<ProductRow, 'user_id' | 'deleted_at'>): Product {
   return {
@@ -19,6 +19,7 @@ export function mapProduct(row: Omit<ProductRow, 'user_id' | 'deleted_at'>): Pro
     },
     servingName: row.serving_name,
     servingGrams: row.serving_grams === null ? null : Number(row.serving_grams),
+    barcode: row.barcode,
     isFavorite: row.is_favorite,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -34,6 +35,7 @@ function toRow(input: ProductInput) {
     carbs_100g: input.per100g.carbs,
     serving_name: input.servingName?.trim() || null,
     serving_grams: input.servingGrams,
+    barcode: input.barcode,
     is_favorite: input.isFavorite,
   }
 }
@@ -56,8 +58,21 @@ export async function getProductsByIds(ids: readonly number[]): Promise<Product[
   return rows.map(mapProduct)
 }
 
+/** Thrown when another active product already has the same barcode (unique index). */
+export class DuplicateBarcodeError extends Error {
+  constructor() {
+    super('Ten kod kreskowy jest już przypisany do innego produktu.')
+    this.name = 'DuplicateBarcodeError'
+  }
+}
+
+function failOnDuplicateBarcode<R extends { error: { message: string } | null }>(result: R): R {
+  if (result.error?.message.includes('products_user_barcode_idx')) throw new DuplicateBarcodeError()
+  return result
+}
+
 export async function createProduct(input: ProductInput): Promise<Product> {
-  const row = must(await supabase.from('products').insert(toRow(input)).select(COLUMNS).single())
+  const row = must(failOnDuplicateBarcode(await supabase.from('products').insert(toRow(input)).select(COLUMNS).single()))
   return mapProduct(row)
 }
 
@@ -68,7 +83,7 @@ export async function createProducts(inputs: readonly ProductInput[]): Promise<v
 
 export async function updateProduct(id: number, input: ProductInput): Promise<Product> {
   const row = must(
-    await supabase.from('products').update(toRow(input)).eq('id', id).select(COLUMNS).single(),
+    failOnDuplicateBarcode(await supabase.from('products').update(toRow(input)).eq('id', id).select(COLUMNS).single()),
   )
   return mapProduct(row)
 }

@@ -229,6 +229,7 @@ export type Database = {
       }
       products: {
         Row: {
+          barcode: string | null
           carbs_100g: number
           created_at: string
           deleted_at: string | null
@@ -244,6 +245,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          barcode?: string | null
           carbs_100g?: number
           created_at?: string
           deleted_at?: string | null
@@ -259,6 +261,7 @@ export type Database = {
           user_id?: string
         }
         Update: {
+          barcode?: string | null
           carbs_100g?: number
           created_at?: string
           deleted_at?: string | null

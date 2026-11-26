@@ -26,6 +26,7 @@ describe('validateProductForm', () => {
         per100g: { kcal: 64, protein: 12, fat: 0, carbs: 4 },
         servingName: null,
         servingGrams: null,
+        barcode: null,
         isFavorite: false,
       },
     })
@@ -73,10 +74,17 @@ describe('validateProductForm', () => {
     expect(!r4.ok && r4.errors.servingGrams).toBe('Waga porcji musi być większa od 0.')
   })
 
+  it('validates and normalizes the barcode', () => {
+    const r = validateProductForm({ ...valid, barcode: ' 012345678905 ' })
+    expect(r.ok && r.input.barcode).toBe('0012345678905')
+    const r2 = validateProductForm({ ...valid, barcode: '123' })
+    expect(!r2.ok && r2.errors.barcode).toBe('Kod kreskowy to 8–14 cyfr.')
+  })
+
   it('keeps full precision in form values', () => {
     const values = productToFormValues({
       id: 1, name: 'X', per100g: { kcal: 64.375, protein: 12.345, fat: 0, carbs: 4 },
-      servingName: null, servingGrams: null, isFavorite: false, createdAt: '', updatedAt: '',
+      servingName: null, servingGrams: null, barcode: null, isFavorite: false, createdAt: '', updatedAt: '',
     })
     expect([values.kcal, values.protein, values.servingGrams]).toEqual(['64,375', '12,345', ''])
   })
@@ -88,6 +96,7 @@ describe('validateProductForm', () => {
       per100g: { kcal: 82, protein: 9.6, fat: 0, carbs: 11 },
       servingName: '1 kubek',
       servingGrams: 150,
+      barcode: '5900512300108',
       isFavorite: true,
       createdAt: '',
       updatedAt: '',
@@ -100,6 +109,7 @@ describe('validateProductForm', () => {
       per100g: p.per100g,
       servingName: p.servingName,
       servingGrams: p.servingGrams,
+      barcode: p.barcode,
       isFavorite: true,
     })
   })

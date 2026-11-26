@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { AmountPanel } from '@/components/AmountPanel'
+import { BarcodeScanner } from '@/components/BarcodeScanner'
 import { QueryState } from '@/components/QueryState'
 import { QuickEntryForm } from '@/components/QuickEntryForm'
 import { ScreenHeader } from '@/components/ScreenHeader'
@@ -46,6 +47,7 @@ export function AddEntryScreen() {
   const [query, setQuery] = useState('')
   const [selection, setSelection] = useState<Selection | null>(null)
   const [quick, setQuick] = useState(false)
+  const [scanning, setScanning] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -89,6 +91,26 @@ export function AddEntryScreen() {
   function pick(item: FoodItem, last: { amount: number; unit: Unit } | null = null) {
     setSaveError(null)
     setSelection({ item, ...(last ?? defaultAmount(item)) })
+  }
+
+  // Returning from "new product" (e.g. after a scan): select the product that was just created.
+  // (State adjusted during render, once the products are loaded.)
+  const [pendingProductId, setPendingProductId] = useState(() => Number(params.get('productId')) || null)
+  if (pendingProductId !== null && products.data) {
+    setPendingProductId(null)
+    const product = products.data.find((p) => p.id === pendingProductId)
+    if (product) setSelection({ item: { kind: 'product', product }, ...defaultAmount({ kind: 'product', product }) })
+  }
+
+  /** Scanned code: own product with that barcode → amount; otherwise a new product prefilled from Open Food Facts. */
+  function handleScanned(code: string) {
+    setScanning(false)
+    const product = products.data?.find((p) => p.barcode === code)
+    if (product) {
+      pick({ kind: 'product', product })
+      return
+    }
+    navigate(`/product/new?barcode=${code}&returnTo=${encodeURIComponent(addUrl)}`)
   }
 
   async function save(input: Parameters<typeof create.mutateAsync>[0]) {
@@ -168,6 +190,9 @@ export function AddEntryScreen() {
           <SearchInput value={query} onChange={setQuery} placeholder="Szukaj produktu lub dania" inputRef={searchRef} autoFocus />
 
           <div className="add-actions">
+            <button type="button" className="chip" onClick={() => setScanning(true)} disabled={loading}>
+              📷 Skanuj kod
+            </button>
             <button type="button" className="chip" onClick={() => setQuick(true)}>
               ⚡ Szybki wpis
             </button>
@@ -191,6 +216,8 @@ export function AddEntryScreen() {
           )}
         </>
       )}
+
+      {scanning && <BarcodeScanner onDetected={handleScanned} onClose={() => setScanning(false)} />}
     </>
   )
 }

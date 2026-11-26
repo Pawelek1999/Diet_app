@@ -53,11 +53,12 @@ na pełnym ekranie. Nie wymaga komputera ani konta Apple Developer do codzienneg
 - Po wybraniu: podaj ilość (gramy albo porcje), podgląd kcal i makro na żywo
 - Przycisk „Utwórz nowy produkt / danie", jeśli nie ma na liście
 - Szybkie dodanie kcal bez produktu („Szybki wpis: 250 kcal"), opcjonalnie z makro (B/T/W); puste kcal liczone z makro
+- Skaner kodów kreskowych (kamera): produkt z własnej bazy → od razu ilość; nowy → formularz wypełniony z Open Food Facts do sprawdzenia; zawsze można wpisać kod ręcznie
 
 ### 3. Produkty
 - Lista z wyszukiwarką
 - Dodaj / edytuj / usuń produkt
-- Pola: nazwa, kcal/100 g, B/T/W na 100 g, opcjonalna porcja (nazwa + gramy), ulubiony
+- Pola: nazwa, kcal/100 g, B/T/W na 100 g, opcjonalna porcja (nazwa + gramy), ulubiony, opcjonalny kod kreskowy (wpisany lub zeskanowany)
 - Walidacja: wartości ≥ 0; ostrzeżenie (nie blokada), gdy kcal mocno odbiega od 4·B + 4·W + 9·T
 
 ### 4. Dania (przepisy i gotowe posiłki)
@@ -128,7 +129,6 @@ Edycja produktu wpływa tylko na nowe wpisy.
 
 ## Poza zakresem MVP (może później)
 
-- Skaner kodów kreskowych (kamera w przeglądarce) + baza Open Food Facts
 - Pomiar wagi ciała i wykres (import z Apple Zdrowie tym samym mechanizmem co aktywność)
 - Woda / nawodnienie
 - Wpis głosowy z AI („na śniadanie dwa jajka i kromka chleba" → wpisy do zatwierdzenia), przez Supabase Edge Function; ewentualnie przez Siri

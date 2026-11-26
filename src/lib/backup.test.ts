@@ -50,6 +50,19 @@ describe('validateBackup', () => {
     expect(validateBackup(badUrl)).toEqual({ ok: false, error: 'Plik jest uszkodzony: dishes[0]: niepoprawny link' })
   })
 
+  it('validates barcodes and rejects duplicates among active products', () => {
+    const [jajko, stary] = valid.products as [Backup['products'][number], Backup['products'][number]]
+    expect(validateBackup({ ...valid, products: [{ ...jajko, barcode: '5900512300108' }, stary] }).ok).toBe(true)
+    expect(validateBackup({ ...valid, products: [{ ...jajko, barcode: '12ab' }, stary] })).toEqual({
+      ok: false,
+      error: 'Plik jest uszkodzony: products[0]: niepoprawny kod kreskowy',
+    })
+    // A deleted product may keep the same code as an active one.
+    expect(validateBackup({ ...valid, products: [{ ...jajko, barcode: '96385074' }, { ...stary, barcode: '96385074' }] }).ok).toBe(true)
+    const dup = { ...valid, products: [{ ...jajko, barcode: '96385074' }, { ...stary, deleted_at: null, barcode: '96385074' }] }
+    expect(validateBackup(dup)).toEqual({ ok: false, error: 'Plik jest uszkodzony: ten sam kod kreskowy w kilku produktach.' })
+  })
+
   it('rejects broken references and duplicate ids', () => {
     const r1 = validateBackup({ ...valid, dish_ingredients: [{ dish_id: 11, product_id: 99, grams: 10, position: 0 }] })
     expect(r1.ok).toBe(false)

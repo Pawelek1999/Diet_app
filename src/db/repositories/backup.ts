@@ -27,7 +27,7 @@ export async function exportBackup(): Promise<Backup> {
   const [products, dishes, dishIngredients, entries, settings, activity] = await Promise.all([
     fetchAll<Backup['products'][number]>(
       'products',
-      'id, name, kcal_100g, protein_100g, fat_100g, carbs_100g, serving_name, serving_grams, is_favorite, created_at, updated_at, deleted_at',
+      'id, name, kcal_100g, protein_100g, fat_100g, carbs_100g, serving_name, serving_grams, barcode, is_favorite, created_at, updated_at, deleted_at',
       'id',
     ),
     fetchAll<Backup['dishes'][number]>(

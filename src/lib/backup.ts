@@ -14,6 +14,8 @@ export type BackupProduct = {
   carbs_100g: number
   serving_name: string | null
   serving_grams: number | null
+  /** optional: added with the barcode scanner (older backups do not have it) */
+  barcode?: string | null
   is_favorite: boolean
   created_at: string
   updated_at: string
@@ -109,6 +111,7 @@ const isNullable = (v: unknown, check: (x: unknown) => boolean) => v === null ||
 const isDay = (v: unknown) => isStr(v) && /^\d{4}-\d{2}-\d{2}$/.test(v)
 
 const MEAL_ID_RE = /^[a-z0-9_]{1,40}$/
+const BARCODE_RE = /^[0-9]{8,14}$/
 
 function checkArray(data: Obj, key: string, check: (row: Obj) => string | null): string | null {
   const arr = data[key]
@@ -136,6 +139,7 @@ export function validateBackup(data: unknown): { ok: true; backup: Backup } | { 
       : !isNonNeg(r.kcal_100g) ? 'niepoprawne kcal'
       : ![r.protein_100g, r.fat_100g, r.carbs_100g].every((v) => isNullable(v, isNonNeg)) ? 'niepoprawne makro'
       : !isNullable(r.serving_grams, (v) => isNum(v) && v > 0) ? 'niepoprawna porcja'
+      : !isNullable(r.barcode, (v) => isStr(v) && BARCODE_RE.test(v)) ? 'niepoprawny kod kreskowy'
       : null,
     ),
     checkArray(data, 'dishes', (r) =>
@@ -188,6 +192,11 @@ export function validateBackup(data: unknown): { ok: true; backup: Backup } | { 
 
   if (new Set(backup.activity.map((a) => a.date)).size !== backup.activity.length) {
     return { ok: false, error: 'Plik jest uszkodzony: powtórzone dni aktywności.' }
+  }
+
+  const activeBarcodes = backup.products.filter((p) => p.deleted_at === null && p.barcode).map((p) => p.barcode)
+  if (new Set(activeBarcodes).size !== activeBarcodes.length) {
+    return { ok: false, error: 'Plik jest uszkodzony: ten sam kod kreskowy w kilku produktach.' }
   }
 
   // Referential integrity

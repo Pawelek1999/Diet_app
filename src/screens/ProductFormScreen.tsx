@@ -1,10 +1,14 @@
 import { useMemo, useState, type FormEvent } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
+import { BarcodeScanner } from '@/components/BarcodeScanner'
 import { QueryState } from '@/components/QueryState'
 import { ScreenHeader } from '@/components/ScreenHeader'
+import { DuplicateBarcodeError } from '@/db/repositories/products'
 import { useDeleteProduct, useProduct, useSaveProduct } from '@/hooks/useProducts'
+import { normalizeBarcode } from '@/lib/barcode'
 import { formatKcal, parseDecimal } from '@/lib/format'
-import { safeReturnTo } from '@/lib/navigation'
+import { safeReturnTo, withParam } from '@/lib/navigation'
 import { isKcalConsistent, kcalFromMacros } from '@/lib/nutrition'
 import {
   EMPTY_PRODUCT_FORM,
@@ -13,12 +17,17 @@ import {
   type ProductFormErrors,
   type ProductFormValues,
 } from '@/lib/productForm'
+import { fetchOffProduct } from '@/services/openFoodFacts'
 
 export function ProductFormScreen() {
   const { id: idParam } = useParams()
   const id = idParam && /^\d+$/.test(idParam) ? Number(idParam) : null
   const isNew = id === null
   const product = useProduct(id)
+  const [params] = useSearchParams()
+  const barcode = isNew ? normalizeBarcode(params.get('barcode') ?? '') : null
+
+  if (barcode !== null) return <ScannedProductForm key={barcode} barcode={barcode} />
 
   if (!isNew && (product.isLoading || product.error)) {
     return (
@@ -48,7 +57,39 @@ export function ProductFormScreen() {
   )
 }
 
-function ProductForm({ id, initial }: { id: number | null; initial: ProductFormValues }) {
+type OffNotice = 'found' | 'not-found' | 'error'
+
+const OFF_NOTICES: Record<OffNotice, string> = {
+  found: 'Dane z Open Food Facts — porównaj z etykietą przed zapisaniem.',
+  'not-found': 'Tego produktu nie ma w Open Food Facts — przepisz wartości z etykiety.',
+  error: 'Nie udało się połączyć z Open Food Facts — przepisz wartości z etykiety.',
+}
+
+/** New product from a scanned barcode: prefilled from Open Food Facts when it knows the product. */
+function ScannedProductForm({ barcode }: { barcode: string }) {
+  const off = useQuery({
+    queryKey: ['openFoodFacts', barcode],
+    queryFn: ({ signal }) => fetchOffProduct(barcode, signal),
+    retry: false,
+    staleTime: Infinity,
+  })
+
+  if (off.isLoading) {
+    return (
+      <>
+        <ScreenHeader title="Nowy produkt" backTo="/foods" />
+        <p className="muted" role="status">
+          Szukam kodu {barcode} w Open Food Facts…
+        </p>
+      </>
+    )
+  }
+
+  const notice: OffNotice = off.error ? 'error' : off.data ? 'found' : 'not-found'
+  return <ProductForm id={null} initial={{ ...EMPTY_PRODUCT_FORM, ...off.data, barcode }} notice={notice} />
+}
+
+function ProductForm({ id, initial, notice }: { id: number | null; initial: ProductFormValues; notice?: OffNotice }) {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const returnTo = safeReturnTo(params.get('returnTo'))
@@ -59,6 +100,7 @@ function ProductForm({ id, initial }: { id: number | null; initial: ProductFormV
   // `initial` is only read on mount; the parent remounts the form (key) when the product id changes,
   // so background refetches never overwrite what the user is typing.
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [scanning, setScanning] = useState(false)
 
   function set<K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }))
@@ -85,9 +127,15 @@ function ProductForm({ id, initial }: { id: number | null; initial: ProductFormV
       return
     }
     try {
-      await save.mutateAsync({ id, input: result.input })
-      navigate(returnTo ?? '/foods', { replace: true })
+      const saved = await save.mutateAsync({ id, input: result.input })
+      // A new product created while adding an entry is selected right away on return.
+      const back = returnTo && id === null && returnTo.startsWith('/entry/add') ? withParam(returnTo, 'productId', String(saved.id)) : returnTo
+      navigate(back ?? '/foods', { replace: true })
     } catch (err) {
+      if (err instanceof DuplicateBarcodeError) {
+        setErrors((e) => ({ ...e, barcode: err.message }))
+        return
+      }
       setSubmitError(err instanceof Error ? err.message : 'Nie udało się zapisać.')
     }
   }
@@ -103,11 +151,27 @@ function ProductForm({ id, initial }: { id: number | null; initial: ProductFormV
     }
   }
 
+  function handleScanned(code: string) {
+    setScanning(false)
+    // New product: reopen the form prefilled from Open Food Facts; existing product: just set the code.
+    if (id === null && values.name.trim() === '') {
+      navigate(withParam(`/product/new${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`, 'barcode', code), { replace: true })
+      return
+    }
+    set('barcode', code)
+  }
+
   const busy = save.isPending || remove.isPending
 
   return (
     <>
       <ScreenHeader title={id === null ? 'Nowy produkt' : 'Edytuj produkt'} backTo={returnTo ?? '/foods'} />
+
+      {notice && (
+        <p className={notice === 'found' ? 'muted small' : 'form-warning'} role="status">
+          {OFF_NOTICES[notice]}
+        </p>
+      )}
 
       <form className="form" onSubmit={handleSubmit} noValidate>
         <TextField label="Nazwa" value={values.name} error={errors.name} onChange={(v) => set('name', v)} autoFocus={id === null} />
@@ -136,6 +200,24 @@ function ProductForm({ id, initial }: { id: number | null; initial: ProductFormV
           </div>
         </fieldset>
 
+        <div className="barcode-row">
+          <label className="field">
+            <span className="field-label">Kod kreskowy (opcjonalnie)</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={values.barcode}
+              aria-invalid={Boolean(errors.barcode)}
+              onChange={(e) => set('barcode', e.target.value)}
+            />
+          </label>
+          <button type="button" className="button button-secondary" onClick={() => setScanning(true)} aria-label="Skanuj kod kreskowy">
+            📷 Skanuj
+          </button>
+        </div>
+        {errors.barcode && <span className="field-error">{errors.barcode}</span>}
+
         <label className="checkbox">
           <input type="checkbox" checked={values.isFavorite} onChange={(e) => set('isFavorite', e.target.checked)} />
           <span>Ulubiony</span>
@@ -156,6 +238,8 @@ function ProductForm({ id, initial }: { id: number | null; initial: ProductFormV
           </button>
         )}
       </form>
+
+      {scanning && <BarcodeScanner onDetected={handleScanned} onClose={() => setScanning(false)} />}
     </>
   )
 }

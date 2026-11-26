@@ -78,7 +78,9 @@ Kroki oznaczone 👤 wykonuje użytkownik (instrukcje w `docs/START.md`).
 - [ ] ✅ Test na iPhonie: po treningu uruchamiam skrót, wartość w aplikacji zgadza się z Garmin Connect
 
 ## Później (poza MVP)
-- [ ] Skaner kodów kreskowych (kamera w przeglądarce) + Open Food Facts API
+- [x] Skaner kodów kreskowych (kamera w przeglądarce) + Open Food Facts API
+  - [ ] 👤 `npm run db:push` (migracja `product_barcode`) i `npm run db:types`
+  - [ ] ✅ Test na iPhonie: skan produktu z bazy, skan nowego produktu (OFF), skan nieznanego kodu
 - [ ] Waga ciała i wykres (import z Apple Zdrowie tym samym mechanizmem)
 - [ ] Wpis głosowy z AI przez Supabase Edge Function (klucz API w sekretach Supabase) + ewentualnie Siri
 - [ ] Zapis offline z kolejką

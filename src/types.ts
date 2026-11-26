@@ -22,6 +22,8 @@ export type Product = {
   per100g: Macros
   servingName: string | null
   servingGrams: number | null
+  /** EAN/UPC, digits only */
+  barcode: string | null
   isFavorite: boolean
   createdAt: string
   updatedAt: string
@@ -32,6 +34,7 @@ export type ProductInput = {
   per100g: Macros
   servingName: string | null
   servingGrams: number | null
+  barcode: string | null
   isFavorite: boolean
 }
 

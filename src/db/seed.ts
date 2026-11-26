@@ -28,6 +28,7 @@ export const SEED_PRODUCTS: ProductInput[] = SEED.map(([name, kcal, protein, fat
   per100g: { kcal, protein, fat, carbs },
   servingName: serving?.[0] ?? null,
   servingGrams: serving?.[1] ?? null,
+  barcode: null,
   isFavorite: false,
 }))
 

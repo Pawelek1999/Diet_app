@@ -32,6 +32,14 @@ export default defineConfig({
         // Only the app shell is cached; Supabase requests always go to the network.
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
         navigateFallback: '/index.html',
+        // Barcode scanner engine (~1 MB): not precached, cached on first scan (file names are content-hashed).
+        runtimeCaching: [
+          {
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.endsWith('.wasm'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'wasm', expiration: { maxEntries: 4 } },
+          },
+        ],
       },
     }),
   ],
