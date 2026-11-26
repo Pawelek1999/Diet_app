@@ -28,6 +28,6 @@ export async function getMeals(): Promise<MealSetting[]> {
 export async function saveMeals(meals: readonly MealSetting[]): Promise<void> {
   await setValue(
     SETTINGS_KEYS.meals,
-    meals.map((m) => ({ id: m.id, visible: m.visible })),
+    meals.map((m) => ({ id: m.id, label: m.label, visible: m.visible })),
   )
 }

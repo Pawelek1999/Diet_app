@@ -79,9 +79,11 @@ na pełnym ekranie. Nie wymaga komputera ani konta Apple Developer do codzienneg
 
 ### 6. Ustawienia
 - Dzienny cel kcal i cele makro
-- Kolejność / widoczność posiłków
+- Posiłki: kolejność, widoczność, zmiana nazw; **własne pory posiłków** (np. „Przed treningiem”) — dodawanie
+  i usuwanie (usunąć można tylko posiłek bez wpisów; wpisy z nieistniejącego posiłku trafiają do grupy „Inne”)
 - Eksport danych do JSON (dodatkowa kopia zapasowa — darmowy plan Supabase nie daje kopii do pobrania) i import z JSON
-- Ustawienia Garmina (sekcja 7), wylogowanie
+- Ustawienia Garmina (sekcja 7) — dane do skrótu iOS (adres, klucz, token) schowane w zwijanej sekcji
+  „Zaawansowane”; wylogowanie
 
 ### 7. Spalone kalorie z Garmina (Apple Zdrowie → Skróty iOS → Supabase)
 - Garmin Connect zapisuje „Aktywną energię" do Apple Zdrowie (ustawienie w aplikacji Garmin Connect)

@@ -98,12 +98,23 @@ export function groupEntriesByMeal(entries: readonly Entry[], meals: readonly Me
     list.push(e)
     byMeal.set(e.meal, list)
   }
-  return meals
+  const groups = meals
     .filter((m) => m.visible || (byMeal.get(m.id)?.length ?? 0) > 0)
     .map((meal) => {
       const list = byMeal.get(meal.id) ?? []
       return { meal, entries: list, total: sumMacros(list.map((e) => e.macros)) }
     })
+  // Entries of meals that no longer exist (e.g. a deleted custom meal) are never hidden.
+  const known = new Set(meals.map((m) => m.id))
+  const orphans = entries.filter((e) => !known.has(e.meal))
+  if (orphans.length > 0) {
+    groups.push({
+      meal: { id: '__other', label: 'Inne', visible: true, custom: true },
+      entries: orphans,
+      total: sumMacros(orphans.map((e) => e.macros)),
+    })
+  }
+  return groups
 }
 
 export type RecentItem = {

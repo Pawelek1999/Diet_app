@@ -7,7 +7,11 @@ export type Macros = {
   carbs: number
 }
 
-export type MealId = 'breakfast' | 'second_breakfast' | 'lunch' | 'snack_pm' | 'dinner' | 'snack'
+/** Built-in meals. Users can add custom meals with ids like "custom_k3j9x2ab". */
+export type DefaultMealId = 'breakfast' | 'second_breakfast' | 'lunch' | 'snack_pm' | 'dinner' | 'snack'
+
+/** Meal id: a DefaultMealId or a custom id (^custom_[a-z0-9]+$). */
+export type MealId = string
 
 export type Unit = 'g' | 'serving'
 
@@ -109,6 +113,8 @@ export type MealSetting = {
   id: MealId
   label: string
   visible: boolean
+  /** true for meals added by the user (can be deleted) */
+  custom: boolean
 }
 
 export type ActivitySource = 'shortcut' | 'manual'

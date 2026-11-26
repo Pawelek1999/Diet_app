@@ -4,7 +4,7 @@ import { AmountPanel } from '@/components/AmountPanel'
 import { QueryState } from '@/components/QueryState'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { SearchInput } from '@/components/SearchInput'
-import { MEAL_IDS, MEAL_LABELS } from '@/constants'
+import { MealSelect } from '@/components/MealSelect'
 import { useDishes } from '@/hooks/useDishes'
 import { useCreateEntry, useRecentEntries } from '@/hooks/useEntries'
 import { useProducts } from '@/hooks/useProducts'
@@ -23,8 +23,9 @@ import type { Macros, MealId, Unit } from '@/types'
 
 type Selection = { item: FoodItem; amount: number; unit: Unit }
 
+/** Meal from the URL: any safe id (built-in or custom); falls back to breakfast. */
 function isMealId(v: string | null): v is MealId {
-  return v !== null && (MEAL_IDS as readonly string[]).includes(v)
+  return v !== null && /^[a-z0-9_]{1,40}$/.test(v)
 }
 
 export function AddEntryScreen() {
@@ -121,18 +122,7 @@ export function AddEntryScreen() {
     <>
       <ScreenHeader title="Dodaj wpis" backTo={backTo} />
 
-      <div className="meal-picker">
-        <label className="field">
-          <span className="field-label">Posiłek</span>
-          <select value={meal} onChange={(e) => setMeal(e.target.value as MealId)}>
-            {MEAL_IDS.map((id) => (
-              <option key={id} value={id}>
-                {MEAL_LABELS[id]}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <MealSelect value={meal} onChange={setMeal} />
 
       {selection ? (
         <section className="card section">

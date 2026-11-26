@@ -108,7 +108,7 @@ const isStr = (v: unknown): v is string => typeof v === 'string'
 const isNullable = (v: unknown, check: (x: unknown) => boolean) => v === null || v === undefined || check(v)
 const isDay = (v: unknown) => isStr(v) && /^\d{4}-\d{2}-\d{2}$/.test(v)
 
-const MEALS = ['breakfast', 'second_breakfast', 'lunch', 'snack_pm', 'dinner', 'snack']
+const MEAL_ID_RE = /^[a-z0-9_]{1,40}$/
 
 function checkArray(data: Obj, key: string, check: (row: Obj) => string | null): string | null {
   const arr = data[key]
@@ -154,7 +154,7 @@ export function validateBackup(data: unknown): { ok: true; backup: Backup } | { 
     ),
     checkArray(data, 'entries', (r) =>
       !isDay(r.date) ? 'niepoprawna data'
-      : !isStr(r.meal) || !MEALS.includes(r.meal) ? 'niepoprawny posiłek'
+      : !isStr(r.meal) || !MEAL_ID_RE.test(r.meal) ? 'niepoprawny posiłek'
       : !isStr(r.name) ? 'brak nazwy'
       : !isNum(r.amount) || r.amount <= 0 ? 'niepoprawna ilość'
       : r.unit !== 'g' && r.unit !== 'serving' ? 'niepoprawna jednostka'

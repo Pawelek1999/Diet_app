@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_GOALS, MEAL_IDS } from '@/constants'
 import {
+  addCustomMeal,
+  canAddMeal,
   canHideMeal,
+  newCustomMealId,
+  removeCustomMeal,
+  renameMeal,
+  validateMealLabel,
   goalsToFormValues,
   kcalFromGoals,
   moveMeal,
@@ -94,5 +100,56 @@ describe('meal list editing', () => {
     const onlyLunch = meals.map((m) => ({ ...m, visible: m.id === 'lunch' }))
     expect(canHideMeal(onlyLunch, 'lunch')).toBe(false)
     expect(canHideMeal(meals, 'lunch')).toBe(true)
+  })
+})
+
+describe('custom meals', () => {
+  it('parses custom meals and renamed built-in meals', () => {
+    const meals = parseMeals([
+      { id: 'breakfast', visible: true, label: '  Śniadanko ' },
+      { id: 'custom_abc123xy', visible: true, label: 'Przed treningiem' },
+      { id: 'custom_bad id', label: 'X' },
+      { id: 'custom_nolabel1' },
+      { id: 'hacker', label: 'X' },
+    ])
+    expect(meals[0]).toEqual({ id: 'breakfast', label: 'Śniadanko', visible: true, custom: false })
+    expect(meals[1]).toEqual({ id: 'custom_abc123xy', label: 'Przed treningiem', visible: true, custom: true })
+    expect(meals.map((m) => m.id)).not.toContain('hacker')
+    expect(meals.map((m) => m.id)).not.toContain('custom_nolabel1')
+    expect(meals).toHaveLength(7)
+  })
+
+  it('falls back to the default label for an empty/too long name', () => {
+    expect(parseMeals([{ id: 'lunch', label: '' }])[0]?.label).toBe('Obiad')
+    expect(parseMeals([{ id: 'lunch', label: 'x'.repeat(31) }])[0]?.label).toBe('Obiad')
+  })
+
+  it('generates valid ids', () => {
+    expect(newCustomMealId()).toMatch(/^custom_[a-z0-9]{8}$/)
+    expect(newCustomMealId(() => 0)).toBe('custom_aaaaaaaa')
+  })
+
+  it('validates labels: required, length, unique (case-insensitive)', () => {
+    const meals = parseMeals(null)
+    expect(validateMealLabel(meals, '  Przed   treningiem ')).toEqual({ ok: true, label: 'Przed treningiem' })
+    expect(validateMealLabel(meals, ' ')).toEqual({ ok: false, error: 'Podaj nazwę posiłku.' })
+    expect(validateMealLabel(meals, 'x'.repeat(31)).ok).toBe(false)
+    expect(validateMealLabel(meals, 'obiad')).toEqual({ ok: false, error: 'Taki posiłek już istnieje.' })
+    expect(validateMealLabel(meals, 'Obiad', 'lunch')).toEqual({ ok: true, label: 'Obiad' })
+  })
+
+  it('adds, renames and removes only custom meals', () => {
+    let meals = addCustomMeal(parseMeals(null), 'Przed treningiem', 'custom_abcd1234')
+    expect(meals.at(-1)).toEqual({ id: 'custom_abcd1234', label: 'Przed treningiem', visible: true, custom: true })
+    meals = renameMeal(meals, 'custom_abcd1234', 'Po treningu')
+    expect(meals.at(-1)?.label).toBe('Po treningu')
+    expect(removeCustomMeal(meals, 'lunch')).toHaveLength(7)
+    expect(removeCustomMeal(meals, 'custom_abcd1234')).toHaveLength(6)
+  })
+
+  it('limits the number of meals', () => {
+    let meals = parseMeals(null)
+    for (let i = 0; i < 6; i++) meals = addCustomMeal(meals, 'M' + i, 'custom_aaaa000' + i)
+    expect(canAddMeal(meals)).toBe(false)
   })
 })

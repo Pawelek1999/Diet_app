@@ -103,3 +103,10 @@ export async function updateEntry(id: number, input: EntryInput): Promise<Entry>
 export async function deleteEntry(id: number): Promise<void> {
   check(await supabase.from('entries').delete().eq('id', id))
 }
+
+/** Number of entries in a meal (used before deleting a custom meal). */
+export async function countEntriesForMeal(meal: string): Promise<number> {
+  const { count, error } = await supabase.from('entries').select('id', { count: 'exact', head: true }).eq('meal', meal)
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}

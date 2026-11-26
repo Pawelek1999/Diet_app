@@ -145,6 +145,15 @@ describe('groupEntriesByMeal', () => {
   })
 })
 
+describe('groupEntriesByMeal — orphans', () => {
+  it('puts entries of deleted meals into an "Inne" group', () => {
+    const groups = groupEntriesByMeal([entry({ id: 1, meal: 'custom_gone1234' })], DEFAULT_MEALS)
+    const last = groups.at(-1)
+    expect(last?.meal.label).toBe('Inne')
+    expect(last?.entries.map((e) => e.id)).toEqual([1])
+  })
+})
+
 describe('recentItems', () => {
   it('returns distinct items newest first with last amount, skipping missing sources', () => {
     const entries: Entry[] = [

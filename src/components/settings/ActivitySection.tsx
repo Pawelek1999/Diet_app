@@ -12,7 +12,8 @@ import type { ActivitySettings } from '@/types'
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? ''
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''
 
-function CopyRow({ label, value, secret }: { label: string; value: string; secret?: boolean }) {
+/** Value with a copy button; masked values show only the beginning (the full value is copied). */
+function CopyRow({ label, value, secret, masked }: { label: string; value: string; secret?: boolean; masked?: boolean }) {
   const [copied, setCopied] = useState(false)
   async function copy() {
     try {
@@ -26,7 +27,9 @@ function CopyRow({ label, value, secret }: { label: string; value: string; secre
   return (
     <div className="copy-row">
       <span className="field-label">{label}</span>
-      <code className={secret ? 'copy-value secret' : 'copy-value'}>{value}</code>
+      <code className={secret ? 'copy-value secret' : 'copy-value'}>
+        {masked && value.length > 18 ? `${value.slice(0, 18)}••••••` : value}
+      </code>
       <button type="button" className="button button-secondary button-small" onClick={copy}>
         {copied ? 'Skopiowano ✓' : 'Kopiuj'}
       </button>
@@ -124,15 +127,15 @@ export function ActivitySection({ settings }: { settings: ActivitySettings }) {
         </button>
       </form>
 
-      <div className="divider" />
-
-      <h3 className="section-title">Dane do skrótu iOS</h3>
+      <details className="advanced">
+        <summary>Zaawansowane: konfiguracja skrótu iOS</summary>
+        <div className="advanced-body">
       <p className="muted small">
         Skrót „{form.shortcutName || settings.shortcutName}” wysyła dzisiejszą aktywną energię z Apple Zdrowie do aplikacji.
         Instrukcja budowy skrótu: docs/START.md, część 5.
       </p>
       <CopyRow label="Adres (URL)" value={importActivityEndpoint(SUPABASE_URL)} />
-      <CopyRow label="Nagłówek apikey" value={ANON_KEY} />
+      <CopyRow label="Nagłówek apikey" value={ANON_KEY} masked />
 
       {newToken ? (
         <div className="token-box">
@@ -153,6 +156,8 @@ export function ActivitySection({ settings }: { settings: ActivitySettings }) {
           </button>
         </>
       )}
+        </div>
+      </details>
 
       {error && (
         <p className="form-error" role="alert">

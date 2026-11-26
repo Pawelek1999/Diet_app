@@ -63,15 +63,19 @@ export function TodayScreen() {
             <header className="meal-header">
               <h2 className="meal-title">{meal.label}</h2>
               {mealEntries.length > 0 && <span className="meal-total">{formatKcal(total.kcal)} kcal</span>}
-              <Link
-                to={`/entry/add?date=${date}&meal=${meal.id}`}
-                className="icon-button meal-add"
-                aria-label={`Dodaj do: ${meal.label}`}
-              >
-                <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-              </Link>
+              {meal.id === '__other' ? (
+                <span className="icon-button-placeholder" aria-hidden="true" />
+              ) : (
+                <Link
+                  to={`/entry/add?date=${date}&meal=${meal.id}`}
+                  className="icon-button meal-add"
+                  aria-label={`Dodaj do: ${meal.label}`}
+                >
+                  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </Link>
+              )}
             </header>
             {mealEntries.length > 0 && (
               <ul className="list">

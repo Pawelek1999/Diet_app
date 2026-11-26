@@ -4,7 +4,7 @@ import { AmountPanel } from '@/components/AmountPanel'
 import { MacroGrid } from '@/components/MacroGrid'
 import { QueryState } from '@/components/QueryState'
 import { ScreenHeader } from '@/components/ScreenHeader'
-import { MEAL_IDS, MEAL_LABELS } from '@/constants'
+import { MealSelect } from '@/components/MealSelect'
 import { useDishes } from '@/hooks/useDishes'
 import { useDeleteEntry, useEntry, useUpdateEntry } from '@/hooks/useEntries'
 import { useProducts } from '@/hooks/useProducts'
@@ -107,16 +107,7 @@ function EntryEditor({ entry, source }: { entry: Entry; source: FoodItem | null 
       <ScreenHeader title="Edytuj wpis" backTo={backTo} />
       <h2 className="detail-title">{entry.name}</h2>
 
-      <label className="field meal-picker">
-        <span className="field-label">Posiłek</span>
-        <select value={meal} onChange={(e) => setMeal(e.target.value as MealId)}>
-          {MEAL_IDS.map((id) => (
-            <option key={id} value={id}>
-              {MEAL_LABELS[id]}
-            </option>
-          ))}
-        </select>
-      </label>
+      <MealSelect value={meal} onChange={setMeal} />
 
       <section className="card section">
         {entry.sourceType === 'quick' ? (

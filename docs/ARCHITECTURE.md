@@ -32,7 +32,8 @@ Diet_app/
 │   └── migrations/
 │       ├── 20261125000001_init.sql       # schemat + RLS + funkcje (Etap 1)
 │       ├── 20261126000001_import_backup.sql  # przywracanie kopii (Etap 5)
-│       └── 20261126000002_activity.sql       # aktywność, tokeny, import z Garmina (Etap 7)
+│       ├── 20261126000002_activity.sql       # aktywność, tokeny, import z Garmina (Etap 7)
+│       └── 20261127000001_custom_meals.sql   # własne pory posiłków
 ├── index.html
 ├── vite.config.ts                # React, vite-plugin-pwa, alias @/, konfiguracja Vitest
 ├── .env.example                  # VITE_SUPABASE_URL=, VITE_SUPABASE_ANON_KEY=
@@ -154,7 +155,193 @@ create table public.entries (
   id          bigint generated always as identity primary key,
   user_id     uuid not null default auth.uid() references auth.users on delete cascade,
   date        date not null,
-  meal        text not null check (meal in ('breakfast','second_breakfast','lunch','snack_pm','dinner','snack')),
+  meal        text not null check (meal ~ '^[a-z0-9_]{1,40}
+  source_type text not null check (source_type in ('product','dish','quick')),
+  product_id  bigint references public.products,
+  dish_id     bigint references public.dishes,
+  name        text not null,              -- nazwa w chwili dodania
+  amount      numeric not null check (amount > 0),
+  unit        text not null check (unit in ('g','serving')),
+  kcal        numeric not null check (kcal >= 0),   -- SNAPSHOT dla tej ilości
+  protein     numeric not null default 0,
+  fat         numeric not null default 0,
+  carbs       numeric not null default 0,
+  created_at  timestamptz not null default now()
+);
+create index entries_user_date_idx on public.entries (user_id, date);
+
+create table public.settings (
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  key     text not null,
+  value   jsonb not null,
+  primary key (user_id, key)
+);
+-- klucze: 'goals'    -> {"kcal":2200,"protein":140,"fat":70,"carbs":250}
+--         'meals'    -> [{"id":"breakfast","label":"Śniadanie","visible":true}, ...]
+--         'activity' -> {"addToGoal":false,"percent":100,"shortcutName":"Kalorie Garmin"}
+```
+
+### RLS (dla każdej tabeli)
+
+```sql
+alter table public.products enable row level security;
+create policy "own rows" on public.products
+  for all to authenticated
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
+```
+
+### Uprawnienia (GRANT)
+Projekt Supabase ma wyłączone „Grant API access to new tables automatically" i włączone
+„Enable RLS on new tables automatically". Dlatego **każda migracja jawnie nadaje uprawnienia**:
+
+```sql
+grant select, insert, update, delete on public.products to authenticated;
+grant execute on function public.save_dish(...) to authenticated;
+-- rola anon dostaje WYŁĄCZNIE execute na import_activity (Etap 7); żadnych tabel
+```
+
+Bez tego aplikacja dostanie błąd „permission denied" mimo poprawnych polityk RLS.
+
+### Zapis dania z składnikami — funkcja `save_dish`
+Danie i jego składniki muszą zapisać się razem (jedna transakcja), więc zapis idzie przez funkcję
+PostgreSQL wywoływaną jako RPC (`security invoker` — działa z RLS użytkownika):
+
+```sql
+save_dish(p_id bigint /* null = nowe */,
+          p_dish jsonb /* {name, mode, servings, cooked_weight_grams, kcal, protein, fat, carbs,
+                           description, notes, recipe_url, is_favorite} */,
+          p_ingredients jsonb /* [{"product_id":1,"grams":60}, ...]; [] w trybie manual */) returns bigint
+-- aktualizuje/wstawia danie, usuwa stare składniki, wstawia nowe z position wg kolejności
+```
+
+### Migracje
+- Pliki `supabase/migrations/<timestamp>_<nazwa>.sql`, wysyłane `npx supabase db push`.
+- Nigdy nie edytujemy wysłanej migracji — zmiana = nowy plik.
+- Po każdej migracji: `npm run db:types` (generuje `src/db/database.types.ts`).
+
+### Dlaczego snapshot w `entries`
+Edycja produktu/dania nie może zmieniać przeszłych dni. Dlatego przy dodaniu wpisu
+obliczamy kcal i makro **dla konkretnej ilości** i zapisujemy je w wierszu.
+Przy edycji ilości wpisu: jeśli źródło (produkt/danie) wciąż istnieje — przelicz z aktualnych
+wartości; jeśli zostało usunięte — przeskaluj proporcjonalnie zapisany snapshot.
+
+### Usuwanie
+Produkty i dania usuwamy miękko (`deleted_at`), bo mogą do nich odwoływać się wpisy i dania.
+Usunięte nie pojawiają się w wyszukiwarce ani na listach.
+
+## Logika obliczeń (`src/lib/nutrition.ts`)
+
+```ts
+type Macros = { kcal: number; protein: number; fat: number; carbs: number };
+
+forGrams(per100g: Macros, grams: number): Macros            // per100g * grams / 100
+dishTotal(ingredients: { per100g: Macros; grams: number }[]): Macros
+dishPerServing(total: Macros, servings: number): Macros
+dishPer100g(total: Macros, totalWeightGrams: number): Macros // cookedWeight ?? suma gramów
+forDishAmount(total, servings, cookedWeight, amount, unit: 'g' | 'serving'): Macros
+sumMacros(list: Macros[]): Macros
+kcalFromMacros(m): number                                    // 4*B + 4*W + 9*T
+isKcalConsistent(m, tolerance = 0.15): boolean
+dailyKcalGoal(baseGoal: number, activeKcal: number | undefined,
+              opts: { addToGoal: boolean; percent: number }): number
+// addToGoal=false lub brak aktywności → baseGoal; inaczej baseGoal + activeKcal * percent / 100
+```
+
+Wszystkie funkcje czyste, bez zaokrągleń (zaokrąglamy tylko w `format.ts` przy wyświetlaniu).
+Każda ma testy, w tym przypadki brzegowe (0 g, brak cookedWeight, servings = 0.5, percent = 0).
+Supabase zwraca `numeric` jako liczby JS — repozytoria i tak normalizują przez `Number(...)`.
+
+## Integracja z Garminem (Etap 7, migracja `..._activity.sql`)
+
+### Przepływ danych
+
+```
+Zegarek Garmin → Garmin Connect (iPhone) → Apple Zdrowie („Aktywna energia")
+   → Skrót iOS „Kalorie Garmin" → POST https://<projekt>.supabase.co/rest/v1/rpc/import_activity
+   → tabela activity (Supabase) → aplikacja pokazuje „Spalone: X kcal"
+```
+
+Skrót nie otwiera aplikacji — wysyła dane prosto do bazy, więc może działać jako automatyzacja.
+
+### Tabele i funkcje
+
+```sql
+create table public.activity (
+  user_id     uuid not null default auth.uid() references auth.users on delete cascade,
+  date        date not null,
+  active_kcal numeric not null check (active_kcal >= 0),
+  source      text not null check (source in ('shortcut','manual')),
+  updated_at  timestamptz not null default now(),
+  primary key (user_id, date)
+);   -- + RLS "own rows" jak wyżej
+
+create table public.import_tokens (     -- RLS włączone, BEZ polityk → niedostępna z aplikacji
+  user_id    uuid primary key references auth.users on delete cascade,
+  token_hash text not null unique,      -- sha256(token), sam token nigdy nie jest zapisywany
+  created_at timestamptz not null default now()
+);
+
+create_import_token() returns text      -- security definer; wymaga zalogowania;
+import_token_created_at() returns timestamptz -- czy/kiedy wygenerowano token (bez ujawniania go)
+                                        -- generuje losowy token, zapisuje hash, zwraca token (raz)
+import_activity(p_token text, p_date date, p_kcal text) returns void
+                                        -- security definer; szuka użytkownika po hashu tokenu,
+                                        -- parsuje p_kcal (przecinek/kropka/spacje), upsert do activity
+-- execute: import_activity dla anon (skrót nie ma sesji), create_import_token tylko dla authenticated
+```
+
+`p_kcal` jest tekstem, bo Skróty mogą sformatować liczbę po polsku („523,4").
+
+### Zapytanie wysyłane przez skrót
+
+```
+POST https://<projekt>.supabase.co/rest/v1/rpc/import_activity
+Nagłówki:  apikey: <klucz anon>
+           Content-Type: application/json
+Treść:     {"p_token":"<token>","p_date":"2026-11-25","p_kcal":"523,4"}
+```
+
+### W aplikacji
+- Ekran Dziś: „Spalone: X kcal" (z tabeli `activity`), przycisk „Odśwież z Garmina" →
+  `window.location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(shortcutName)`;
+  po powrocie (`visibilitychange`) — odświeżenie danych.
+- Ręczna edycja wartości (source = 'manual').
+- Ustawienia: generowanie tokenu (pokazany raz, przycisk „Kopiuj"), nazwa skrótu, doliczanie do celu + procent.
+
+## Eksport / import (`src/lib/backup.ts`)
+
+- Format: `{ app: "kalorie", version: 1, exportedAt, products, dishes, dish_ingredients, entries, settings }`
+  — wiersze z nazwami kolumn bazy (snake_case), bez `user_id`, łącznie z miękko usuniętymi pozycjami.
+  Nowe tabele (np. `activity` w Etapie 7) dochodzą jako opcjonalne pola tej samej wersji albo nowa wersja.
+- Eksport (`src/db/repositories/backup.ts`): pobieranie stronami po 1000 wierszy (limit `max_rows` Supabase).
+  Dwa kroki w UI: „Przygotuj kopię" (sieć) → „Zapisz plik" — `navigator.share({ files })` musi być wywołane
+  bezpośrednio z tapnięcia (iOS), fallback: pobranie pliku. Data ostatniej kopii w `settings.lastBackupAt`.
+- Import: `<input type="file">` → `parseBackupFile` (walidacja typów i odwołań, testowana) → potwierdzenie
+  z podsumowaniem → RPC `import_backup(jsonb)` (migracja `20261126000001_import_backup.sql`): usuwa dane
+  użytkownika i wstawia kopię w jednej transakcji, z nowymi ID i mapowaniem odwołań. Błąd = brak zmian.
+
+## PWA (`vite.config.ts`)
+
+- `vite-plugin-pwa`, `registerType: 'autoUpdate'`, precache plików buildu. Zapytania do Supabase **nie** są cache'owane.
+- Manifest: `name: 'Kalorie'`, `display: 'standalone'`, `lang: 'pl'`, `start_url: '/'`, ikony 192/512, kolory.
+- W `index.html`: `apple-touch-icon`, `apple-mobile-web-app-capable`, `viewport-fit=cover`.
+- Nowy deploy → service worker pobiera nową wersję, aktywna od następnego uruchomienia.
+
+## UI / UX
+
+- Dolne zakładki: **Dziś · Produkty · Historia · Ustawienia** (komponent `TabBar`, przyklejony na dole, `safe-area-inset-bottom`)
+- Dodawanie wpisu jako pełnoekranowy ekran z przyciskiem „Zamknij"
+- Pola liczbowe: `inputmode="decimal"`, akceptuj przecinek i kropkę (parsowanie w `format.ts`)
+- Kolory makro stałe w całej aplikacji (B / T / W) — zmienne CSS
+- Tryb ciemny przez `@media (prefers-color-scheme: dark)`
+- Wykres tygodnia: własny komponent SVG (bez biblioteki)
+- Rozmiar czcionki pól formularza ≥ 16 px (inaczej Safari powiększa stronę przy fokusie)
+- Wyszukiwanie: `normalizeForSearch(text)` w `src/lib/format.ts` — małe litery, usunięcie polskich znaków,
+  przycięcie spacji i interpunkcji dodawanej przez dyktowanie iOS; porównanie „zawiera"
+  (filtrowanie po stronie klienta — lista produktów jednej osoby jest mała)
+- Stany: ładowanie (szkielet / spinner), błąd z przyciskiem „Spróbuj ponownie", brak internetu (baner)
+),  -- 6 wbudowanych lub custom_xxxxxxxx (migracja 4)
   source_type text not null check (source_type in ('product','dish','quick')),
   product_id  bigint references public.products,
   dish_id     bigint references public.dishes,
